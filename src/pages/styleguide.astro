@@ -1,0 +1,161 @@
+---
+/**
+ * 공통 컴포넌트 미리보기 (검색 제외). 디자인을 바꿀 때 여기서 한 번에 확인.
+ */
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import StatusChip from '~/components/StatusChip.astro';
+import GuideStatusChip from '~/components/GuideStatusChip.astro';
+import TrackBadge from '~/components/TrackBadge.astro';
+import SourceLine from '~/components/SourceLine.astro';
+import ForeignerBox from '~/components/ForeignerBox.astro';
+import Notice from '~/components/Notice.astro';
+import FlowSteps from '~/components/FlowSteps.astro';
+import EventList from '~/components/EventList.astro';
+import TrackCompanyButton from '~/components/TrackCompanyButton.astro';
+import { getCompanyData, type EventEntry } from '~/lib/companies';
+import { addDays, todayIn } from '~/lib/dates';
+import { TRACKS } from '~/lib/tracks';
+
+const data = await getCompanyData();
+const cy = data.byId.get('cygames')!;
+const se = data.byId.get('square-enix')!;
+const sega = data.byId.get('sega')!;
+
+// 상태별 모양을 보기 위한 예시 일정 (오늘 = 빌드 시점 일본 날짜)
+const today = todayIn();
+const sample = (o: Partial<EventEntry> & { date: string; title: string }): EventEntry => ({
+  id: `sample-${o.date}-${o.title}`,
+  company: 'cygames',
+  companyName: '예시 기업',
+  companyNameJa: '例',
+  industryId: 'game',
+  timezone: 'Asia/Tokyo',
+  checkedAt: today,
+  kind: '응모',
+  ...o,
+});
+const samples: EventEntry[] = [
+  sample({ date: addDays(today, -1), title: '어제 끝난 일정' }),
+  sample({ date: today, endTime: '23:59', title: '오늘 마감 (마감 시각 있음)' }),
+  sample({ date: addDays(today, 3), title: '3일 뒤 마감 → 마감 임박', kind: 'ES' }),
+  sample({ date: addDays(today, -5), time: '15:00', end: addDays(today, 10), endTime: '15:00', title: '응모 기간 진행 중' }),
+  sample({ date: addDays(today, 20), time: '15:00', end: addDays(today, 30), endTime: '15:00', title: '응모 기간 시작 전' }),
+  sample({ date: addDays(today, 12), time: '13:00', endTime: '17:00', title: '시간 정해진 설명회', kind: '설명회', sourceNote: '取材 메모 예시' }),
+];
+---
+<BaseLayout title="컴포넌트 미리보기" noindex>
+  <h1 class="h1">컴포넌트 미리보기</h1>
+  <p class="lead">공통 UI 요소를 한곳에 모았어요. 기준일 <span class="num">{today}</span> (일본 시간, 빌드 시점)</p>
+
+  <section class="sg">
+    <h2>상태 칩 <code>StatusChip</code> · <code>GuideStatusChip</code></h2>
+    <div class="row">
+      <GuideStatusChip guideYear={28} targetYear={28} />
+      <GuideStatusChip guideYear={27} targetYear={28} />
+      <StatusChip tone="danger" label="마감 임박 D-3" />
+      <StatusChip tone="ok" label="진행 중 · D-10" />
+      <StatusChip tone="plain" label="D-24" />
+      <StatusChip tone="past" label="지남" />
+      <StatusChip tone="plain" outline label="응모" />
+    </div>
+  </section>
+
+  <section class="sg">
+    <h2>트랙 배지 <code>TrackBadge</code></h2>
+    <div class="row">{TRACKS.map((t) => <TrackBadge track={t.id} />)}</div>
+  </section>
+
+  <section class="sg">
+    <h2>일정 행 <code>EventList</code> · <code>EventRow</code> — 상태 예시</h2>
+    <EventList events={samples} />
+  </section>
+
+  <section class="sg">
+    <h2>일정 행 — 실제 데이터 (게임)</h2>
+    <EventList events={data.events} />
+  </section>
+
+  <div class="two">
+    <section class="sg">
+      <h2>좁은 영역 (사이드)</h2>
+      <EventList events={data.events.slice(0, 3)} />
+    </section>
+    <section class="sg">
+      <h2>기업 열 없음 (기업 상세의 관련 일정)</h2>
+      <EventList events={data.events.filter((e) => e.company === 'cygames')} showCompany={false} />
+    </section>
+  </div>
+
+  <section class="sg">
+    <h2>외국인 지원자 체크 <code>ForeignerBox</code></h2>
+    <ForeignerBox id="fb-se" foreigner={se.foreigner} japanese={se.japanese} />
+    <ForeignerBox id="fb-cy" foreigner={cy.foreigner} japanese={cy.japanese} />
+  </section>
+
+  <section class="sg">
+    <h2>안내 <code>Notice</code></h2>
+    <Notice title="28졸 요강이 아직 안 나왔어요.">아래는 27졸 요강 기준이라 일정·초임·전형이 바뀔 수 있어요.</Notice>
+    <Notice tone="info" title="참고">세가는 외국 국적자 대상 별도 모집이 있어요.</Notice>
+  </section>
+
+  <section class="sg">
+    <h2>전형 흐름 <code>FlowSteps</code></h2>
+    <div class="two">
+      <FlowSteps flow={se.flow} />
+      <FlowSteps flow={sega.flow} />
+    </div>
+  </section>
+
+  <section class="sg">
+    <h2>버튼 <code>TrackCompanyButton</code></h2>
+    <div class="row">
+      <TrackCompanyButton companyId={cy.id} companyName={cy.name} />
+      <a class="btn" href={cy.sources[0]!.url} target="_blank" rel="noopener noreferrer">공식 요강</a>
+    </div>
+  </section>
+
+  <section class="sg">
+    <h2>출처·확인일 <code>SourceLine</code></h2>
+    <SourceLine sources={cy.sources} checkedAt={cy.checkedAt} />
+    <SourceLine sources={[]} checkedAt="2026-11-08" checkedLabel="최종 확인일" />
+  </section>
+</BaseLayout>
+
+<style>
+  .h1 {
+    font-size: var(--fs-xl);
+  }
+  .lead {
+    margin-top: var(--sp-1);
+    color: var(--text-muted);
+    font-size: var(--fs-sm);
+  }
+  .sg {
+    margin-top: var(--sp-10);
+  }
+  .sg > h2 {
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+    font-weight: var(--fw-semibold);
+    margin-bottom: var(--sp-3);
+  }
+  code {
+    font-size: 0.9em;
+    color: var(--text-faint);
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    align-items: center;
+  }
+  .two {
+    display: grid;
+    gap: var(--sp-8);
+  }
+  @media (min-width: 760px) {
+    .two {
+      grid-template-columns: 300px 1fr;
+    }
+  }
+</style>
