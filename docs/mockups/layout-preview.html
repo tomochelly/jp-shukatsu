@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>레이아웃 시안 — 홈 · 기업 상세</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+/* =========================================================
+   디자인 토큰 — 실제 프로젝트에서는 src/styles/tokens.css 한 파일
+   ========================================================= */
+:root {
+  /* 글꼴 */
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Hiragino Sans", sans-serif;
+  --font-num: var(--font-sans); /* 숫자는 font-variant-numeric: tabular-nums로 고정폭 */
+
+  /* 글자 크기 (모바일 기준, 1.125 비율) */
+  --fs-xs: 0.75rem;   /* 12 */
+  --fs-sm: 0.8125rem; /* 13 */
+  --fs-base: 0.9375rem; /* 15 */
+  --fs-md: 1.0625rem; /* 17 */
+  --fs-lg: 1.25rem;   /* 20 */
+  --fs-xl: 1.5rem;    /* 24 */
+  --lh-tight: 1.35;
+  --lh-body: 1.65;
+
+  /* 간격 (4px 단위) */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px; --sp-12: 48px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --measure: 65ch;
+  --page-max: 1080px;
+
+  /* 색 — 라이트 */
+  --bg: #f6f6f3;
+  --surface: #ffffff;
+  --surface-sunken: #efefeb;
+  --text: #1c1d1f;
+  --text-muted: #5c5f63;
+  --text-faint: #8a8d91;
+  --border: #e1e1dc;
+  --border-strong: #c9c9c2;
+
+  /* 악센트 1개: 먹색에 가까운 청록 */
+  --accent: #1b5e74;
+  --accent-hover: #144a5c;
+  --accent-soft: #e5f0f2;
+  --on-accent: #ffffff;
+
+  /* 상태 색 (악센트와 별도) */
+  --ok: #1e7044;      --ok-soft: #e3f3e9;
+  --warn: #8a5800;    --warn-soft: #fbf0d3;
+  --danger: #b3261e;  --danger-soft: #fbe7e5;
+  --past: #8a8d91;    --past-soft: #ececea;
+
+  /* 트랙 색 (살짝씩만 다르게) */
+  --track-new: #1b5e74;    --track-new-soft: #e5f0f2;
+  --track-direct: #95512a; --track-direct-soft: #f6ebe3;
+  --track-career: #4d5b63; --track-career-soft: #e8ecee;
+
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141517; --surface: #1c1d20; --surface-sunken: #111214;
+    --text: #e8e8e6; --text-muted: #a4a7ab; --text-faint: #75787d;
+    --border: #2d2f33; --border-strong: #42454a;
+    --accent: #7cc3d6; --accent-hover: #9dd3e2; --accent-soft: #1b3038; --on-accent: #0d1a1f;
+    --ok: #6fcf97; --ok-soft: #173326;
+    --warn: #e6b450; --warn-soft: #362a12;
+    --danger: #f28b82; --danger-soft: #3b1d1b;
+    --past: #75787d; --past-soft: #24262a;
+    --track-new: #7cc3d6; --track-new-soft: #1b3038;
+    --track-direct: #e0a27c; --track-direct-soft: #35251b;
+    --track-career: #a9b7bf; --track-career-soft: #262c30;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141517; --surface: #1c1d20; --surface-sunken: #111214;
+  --text: #e8e8e6; --text-muted: #a4a7ab; --text-faint: #75787d;
+  --border: #2d2f33; --border-strong: #42454a;
+  --accent: #7cc3d6; --accent-hover: #9dd3e2; --accent-soft: #1b3038; --on-accent: #0d1a1f;
+  --ok: #6fcf97; --ok-soft: #173326;
+  --warn: #e6b450; --warn-soft: #362a12;
+  --danger: #f28b82; --danger-soft: #3b1d1b;
+  --past: #75787d; --past-soft: #24262a;
+  --track-new: #7cc3d6; --track-new-soft: #1b3038;
+  --track-direct: #e0a27c; --track-direct-soft: #35251b;
+  --track-career: #a9b7bf; --track-career-soft: #262c30;
+  color-scheme: dark;
+}
+
+/* ========== 기본 ========== */
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--font-sans); font-size: var(--fs-base); line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased; word-break: keep-all; overflow-wrap: anywhere;
+}
+a { color: inherit; }
+.num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; letter-spacing: 0; }
+:lang(ja) { font-family: "Hiragino Sans", "Noto Sans JP", var(--font-sans); }
+.ja { color: var(--text-muted); font-size: 0.92em; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+/* ========== 시안용 조작 바 (실제 사이트에는 없음) ========== */
+.mock-bar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); align-items: center;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--surface-sunken); border-bottom: 1px solid var(--border);
+  font-size: var(--fs-sm); color: var(--text-muted);
+}
+.mock-bar label { display: inline-flex; gap: var(--sp-1); align-items: center; }
+.mock-bar select, .mock-bar button {
+  font: inherit; color: var(--text); background: var(--surface);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 2px 8px;
+}
+.mock-bar button[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+.mock-bar .seg { display: inline-flex; gap: 2px; }
+.mock-stage { padding: var(--sp-6) var(--sp-4) var(--sp-12); }
+.frame {
+  margin: 0 auto; background: var(--bg);
+  container-type: inline-size; container-name: site;
+  border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden;
+}
+.frame[data-w="mobile"] { max-width: 390px; }
+.frame[data-w="desktop"] { max-width: 1180px; }
+
+/* ========== 사이트 레이아웃 ========== */
+.site-header {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border); background: var(--surface);
+}
+.brand { font-weight: 700; font-size: var(--fs-md); text-decoration: none; letter-spacing: -0.01em; }
+.brand small { font-weight: 500; color: var(--text-faint); font-size: var(--fs-xs); margin-left: 4px; }
+.nav { display: flex; gap: var(--sp-4); font-size: var(--fs-sm); }
+.nav a { text-decoration: none; color: var(--text-muted); padding: var(--sp-1) 0; }
+.nav a[aria-current="page"] { color: var(--text); font-weight: 600; box-shadow: inset 0 -2px 0 var(--accent); }
+.icon-btn {
+  width: 32px; height: 32px; display: grid; place-items: center; flex: none;
+  border: 1px solid var(--border); border-radius: var(--radius-sm); background: transparent; color: var(--text-muted); cursor: pointer;
+}
+.nav-mobile { display: flex; gap: var(--sp-5); padding: 0 var(--sp-4); border-bottom: 1px solid var(--border); background: var(--surface); font-size: var(--fs-sm); overflow-x: auto; }
+.nav-mobile a { text-decoration: none; color: var(--text-muted); padding: var(--sp-2) 0; white-space: nowrap; }
+.nav-mobile a[aria-current="page"] { color: var(--text); font-weight: 600; box-shadow: inset 0 -2px 0 var(--accent); }
+.header-nav-desktop { display: none; }
+@container site (min-width: 760px) {
+  .header-nav-desktop { display: flex; }
+  .nav-mobile { display: none; }
+  .site-header { padding: var(--sp-3) var(--sp-8); }
+}
+
+main { padding: var(--sp-5) var(--sp-4) var(--sp-10); max-width: var(--page-max); margin: 0 auto; }
+@container site (min-width: 760px) { main { padding: var(--sp-8) var(--sp-8) var(--sp-12); } }
+
+.section { margin-top: var(--sp-8); }
+.section:first-child { margin-top: 0; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-3); }
+.section-title { font-size: var(--fs-md); font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+.section-link { font-size: var(--fs-sm); color: var(--accent); text-decoration: none; white-space: nowrap; }
+.section-link:hover { text-decoration: underline; }
+.eyebrow { font-size: var(--fs-xs); color: var(--text-faint); margin: 0 0 var(--sp-1); }
+
+/* ========== 컴포넌트: 상태 칩 ========== */
+.chip {
+  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+  font-size: var(--fs-xs); font-weight: 600; line-height: 1; padding: 4px 7px;
+  border-radius: var(--radius-sm); border: 1px solid transparent;
+}
+.chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.chip--ok { color: var(--ok); background: var(--ok-soft); }
+.chip--warn { color: var(--warn); background: var(--warn-soft); }
+.chip--danger { color: var(--danger); background: var(--danger-soft); }
+.chip--past { color: var(--past); background: var(--past-soft); }
+.chip--plain { color: var(--text-muted); background: transparent; border-color: var(--border); font-weight: 500; }
+.chip--plain::before { display: none; }
+
+/* ========== 컴포넌트: 트랙 배지 ========== */
+.track-badge {
+  display: inline-block; white-space: nowrap; font-size: var(--fs-xs); font-weight: 600; line-height: 1;
+  padding: 4px 6px; border-radius: var(--radius-sm);
+  color: var(--t); background: var(--t-soft);
+}
+[data-track="new"] { --t: var(--track-new); --t-soft: var(--track-new-soft); }
+[data-track="direct"] { --t: var(--track-direct); --t-soft: var(--track-direct-soft); }
+[data-track="career"] { --t: var(--track-career); --t-soft: var(--track-career-soft); }
+
+/* ========== 홈: 트랙 선택 ========== */
+.track-intro h1 { font-size: var(--fs-xl); line-height: var(--lh-tight); margin: 0 0 var(--sp-1); letter-spacing: -0.02em; }
+.track-intro p { margin: 0 0 var(--sp-4); color: var(--text-muted); font-size: var(--fs-sm); }
+.track-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.track-item a {
+  display: grid; grid-template-columns: 4px 1fr auto; gap: var(--sp-3); align-items: center;
+  padding: var(--sp-4) 0; border-bottom: 1px solid var(--border); text-decoration: none;
+}
+.track-item .bar { align-self: stretch; background: var(--t); border-radius: 2px; }
+.track-item .t-name { font-weight: 700; font-size: var(--fs-md); }
+.track-item .t-name .ja { font-weight: 500; margin-left: 4px; }
+.track-item .t-desc { color: var(--text-muted); font-size: var(--fs-sm); margin-top: 2px; }
+.track-item .t-meta { font-size: var(--fs-xs); color: var(--text-faint); margin-top: var(--sp-1); }
+.track-item .t-meta.empty { color: var(--track-direct); }
+.track-item .arrow { color: var(--text-faint); }
+.track-item a:hover .t-name { color: var(--t); }
+.track-item[data-empty] .t-name { color: var(--text-muted); }
+@container site (min-width: 760px) {
+  .track-intro { display: grid; grid-template-columns: 1fr; }
+  .track-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 var(--sp-6); border-top: 0; }
+  .track-item a { grid-template-columns: 1fr auto; grid-template-rows: auto; border-bottom: 0; border-top: 3px solid var(--t); padding: var(--sp-4) 0 var(--sp-2); }
+  .track-item .bar { display: none; }
+}
+
+/* ========== 컴포넌트: 일정 행 ========== */
+.event-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.event-row {
+  display: grid; grid-template-columns: 4.6rem 1fr; gap: var(--sp-1) var(--sp-3);
+  padding: var(--sp-3) 0; border-bottom: 1px solid var(--border); align-items: start;
+}
+.event-date { font-weight: 600; font-size: var(--fs-sm); line-height: 1.4; }
+.event-date .dow { color: var(--text-faint); font-weight: 500; }
+.event-date .range { display: block; color: var(--text-faint); font-weight: 500; font-size: var(--fs-xs); }
+.event-body { min-width: 0; }
+.event-company { font-size: var(--fs-xs); color: var(--text-muted); font-weight: 600; text-decoration: none; }
+.event-company:hover { color: var(--accent); }
+.event-title { font-size: var(--fs-base); line-height: 1.45; margin-top: 1px; }
+.event-meta { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); align-items: center; margin-top: var(--sp-1); }
+.event-note { font-size: var(--fs-xs); color: var(--text-faint); }
+.event-add {
+  font: inherit; font-size: var(--fs-xs); color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; margin-left: auto;
+}
+.event-add[aria-pressed="true"] { color: var(--ok); }
+.event-row.is-past .event-date, .event-row.is-past .event-title, .event-row.is-past .event-company { color: var(--text-faint); }
+.event-row.is-past .event-title { text-decoration: line-through; text-decoration-color: var(--border-strong); }
+@container site (min-width: 760px) {
+  .event-row { grid-template-columns: 7.5rem 8.5rem minmax(0,1fr) auto; align-items: center; }
+  .event-body { display: contents; }
+  .event-company { font-size: var(--fs-sm); }
+  .event-title { margin: 0; }
+  .event-meta { margin: 0; justify-content: flex-end; }
+  .event-note { flex-basis: 100%; text-align: right; order: 9; }
+}
+
+/* ========== 홈: 2열 ========== */
+.home-cols { display: block; margin-top: var(--sp-8); }
+.home-cols > .section:first-child { margin-top: 0; }
+@container site (min-width: 760px) {
+  .home-cols { display: grid; grid-template-columns: 1fr 300px; gap: var(--sp-10); }
+  .home-cols > .section { margin-top: 0; }
+  .event-add { margin-left: var(--sp-2); }
+}
+.post-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.post-list li { padding: var(--sp-3) 0; border-bottom: 1px solid var(--border); }
+.post-list a { text-decoration: none; font-weight: 600; line-height: 1.45; display: block; }
+.post-list a:hover { color: var(--accent); }
+.post-meta { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; margin-top: var(--sp-1); font-size: var(--fs-xs); color: var(--text-faint); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); font-size: var(--fs-xs); color: var(--text-faint); align-items: center; }
+
+/* ========== 기업 상세 ========== */
+.crumbs { font-size: var(--fs-xs); color: var(--text-faint); margin-bottom: var(--sp-3); }
+.crumbs a { text-decoration: none; color: var(--text-muted); }
+.crumbs a:hover { color: var(--accent); }
+.co-head h1 { font-size: var(--fs-xl); line-height: var(--lh-tight); margin: 0; letter-spacing: -0.02em; }
+.co-head .ja { display: block; font-size: var(--fs-sm); margin-top: 2px; }
+.co-head .chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); }
+.co-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: var(--fs-sm); font-weight: 600;
+  padding: 9px 14px; border-radius: var(--radius-md); cursor: pointer; text-decoration: none; line-height: 1.2;
+  border: 1px solid var(--border-strong); background: var(--surface); color: var(--text);
+}
+.btn--primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.btn--primary:hover { background: var(--accent-hover); }
+.btn--primary[aria-pressed="true"] { background: var(--surface); color: var(--ok); border-color: var(--ok); }
+.btn svg { width: 14px; height: 14px; }
+
+.notice {
+  display: grid; grid-template-columns: auto 1fr; gap: var(--sp-2); align-items: start;
+  margin-top: var(--sp-4); padding: var(--sp-3) var(--sp-4);
+  background: var(--warn-soft); color: var(--text); border-left: 3px solid var(--warn); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: var(--fs-sm); line-height: 1.55;
+}
+.notice strong { color: var(--warn); }
+.notice svg { color: var(--warn); margin-top: 2px; }
+
+/* 컴포넌트: 외국인 관련 강조 박스 */
+.foreigner-box {
+  margin-top: var(--sp-5); border: 1px solid var(--accent); border-radius: var(--radius-md); background: var(--surface); overflow: hidden;
+}
+.foreigner-box > header {
+  display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4); background: var(--accent-soft); color: var(--accent);
+  font-weight: 700; font-size: var(--fs-sm);
+}
+.foreigner-box > header span { font-weight: 500; font-size: var(--fs-xs); color: var(--text-muted); }
+.foreigner-box dl { margin: 0; }
+.fb-row { padding: var(--sp-3) var(--sp-4); border-top: 1px solid var(--border); }
+.fb-row:first-child { border-top: 0; }
+.fb-row dt { font-size: var(--fs-xs); font-weight: 700; color: var(--text-muted); margin-bottom: 2px; }
+.fb-row dd { margin: 0; line-height: 1.6; }
+.fb-row.is-missing dd { color: var(--text-faint); }
+.fb-row.is-missing dd em { font-style: normal; display: block; font-size: var(--fs-xs); margin-top: 2px; }
+@container site (min-width: 760px) {
+  .fb-row { display: grid; grid-template-columns: 7rem 1fr; gap: var(--sp-4); }
+  .fb-row dt { margin: 0; padding-top: 2px; }
+}
+
+.detail-cols { display: block; }
+@container site (min-width: 760px) {
+  .detail-cols { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: var(--sp-10); align-items: start; }
+  .detail-aside { position: sticky; top: var(--sp-6); }
+}
+.detail-main { max-width: 720px; }
+.block { margin-top: var(--sp-8); }
+.block > h2 { font-size: var(--fs-md); margin: 0 0 var(--sp-3); padding-bottom: var(--sp-2); border-bottom: 1px solid var(--border); letter-spacing: -0.01em; }
+
+.flow-group + .flow-group { margin-top: var(--sp-4); }
+.flow-label { font-size: var(--fs-xs); font-weight: 700; color: var(--text-muted); margin-bottom: var(--sp-2); }
+.flow-steps { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+.flow-steps li {
+  counter-increment: step; position: relative; padding: 0 0 var(--sp-3) 2rem; line-height: 1.5;
+}
+.flow-steps li::before {
+  content: counter(step); position: absolute; left: 0; top: 0;
+  width: 1.375rem; height: 1.375rem; border-radius: 50%; display: grid; place-items: center;
+  font-size: var(--fs-xs); font-weight: 700; font-variant-numeric: tabular-nums;
+  border: 1px solid var(--border-strong); color: var(--text-muted); background: var(--surface);
+}
+.flow-steps li::after {
+  content: ""; position: absolute; left: calc(0.6875rem - 0.5px); top: 1.5rem; bottom: 2px; width: 1px; background: var(--border);
+}
+.flow-steps li:last-child { padding-bottom: 0; }
+.flow-steps li:last-child::after { display: none; }
+.flow-steps li:last-child::before { border-color: var(--accent); color: var(--accent); }
+.flow-text { margin: 0; }
+.flow-text + .flow-text, .flow-group + .flow-text, .flow-text + .flow-group { margin-top: var(--sp-3); }
+
+.facts { margin: 0; }
+.facts > div { display: grid; grid-template-columns: 5.5rem 1fr; gap: var(--sp-3); padding: var(--sp-3) 0; border-bottom: 1px solid var(--border); }
+.facts > div:first-child { padding-top: 0; }
+.facts dt { font-size: var(--fs-sm); color: var(--text-muted); font-weight: 600; }
+.facts dd { margin: 0; }
+.roles { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); list-style: none; margin: 0; padding: 0; }
+.roles li { font-size: var(--fs-sm); padding: 2px 8px; background: var(--surface-sunken); border-radius: var(--radius-sm); }
+
+.memo { list-style: none; margin: 0; padding: 0; }
+.memo li { position: relative; padding-left: var(--sp-4); }
+.memo li + li { margin-top: var(--sp-2); }
+.memo li::before { content: ""; position: absolute; left: 2px; top: 0.7em; width: 5px; height: 5px; background: var(--text-faint); border-radius: 1px; }
+
+/* 컴포넌트: 출처·확인일 */
+.source-line {
+  margin-top: var(--sp-8); padding-top: var(--sp-3); border-top: 1px dashed var(--border-strong);
+  font-size: var(--fs-xs); color: var(--text-muted); line-height: 1.7;
+}
+.source-line .lbl { color: var(--text-faint); margin-right: 4px; }
+.source-line a { color: var(--text-muted); text-underline-offset: 2px; }
+.source-line a:hover { color: var(--accent); }
+.source-line .sep { color: var(--border-strong); margin: 0 6px; }
+.source-line .checked { white-space: nowrap; }
+
+.aside-panel { border-top: 2px solid var(--text); padding-top: var(--sp-3); }
+.aside-panel + .aside-panel { margin-top: var(--sp-6); }
+.aside-panel h3 { font-size: var(--fs-sm); margin: 0 0 var(--sp-2); }
+.aside-panel p { font-size: var(--fs-sm); color: var(--text-muted); margin: 0 0 var(--sp-3); }
+.toc { list-style: none; margin: 0; padding: 0; font-size: var(--fs-sm); }
+.toc a { text-decoration: none; color: var(--text-muted); display: block; padding: 3px 0; }
+.toc a:hover { color: var(--accent); }
+.detail-aside .event-row { grid-template-columns: 4.6rem 1fr; }
+.detail-aside .event-body { display: block; }
+.detail-aside .event-meta { justify-content: flex-start; margin-top: var(--sp-1); }
+.detail-aside .event-date .range { display: block; margin: 0; }
+.aside-mobile-hide { display: none; }
+@container site (min-width: 760px) { .aside-mobile-hide { display: block; } }
+
+/* ========== 푸터 ========== */
+.site-footer { border-top: 1px solid var(--border); padding: var(--sp-5) var(--sp-4) var(--sp-8); font-size: var(--fs-xs); color: var(--text-muted); background: var(--surface); }
+.site-footer p { margin: 0; max-width: var(--measure); }
+.site-footer p + p { margin-top: var(--sp-2); color: var(--text-faint); }
+.site-footer strong { color: var(--text); font-weight: 600; }
+@container site (min-width: 760px) { .site-footer { padding: var(--sp-6) var(--sp-8) var(--sp-10); } }
+
+.toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); font-size: var(--fs-sm); padding: 8px 14px; border-radius: var(--radius-md); opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="mock-bar" role="toolbar" aria-label="시안 조작">
+  <strong style="color:var(--text)">시안</strong>
+  <span class="seg" data-group="view">
+    <button type="button" data-v="home" aria-pressed="true">홈</button>
+    <button type="button" data-v="company" aria-pressed="false">기업 상세</button>
+  </span>
+  <label>기업 <select id="co-select"></select></label>
+  <span class="seg" data-group="w">
+    <button type="button" data-v="mobile" aria-pressed="true">모바일 390</button>
+    <button type="button" data-v="desktop" aria-pressed="false">데스크톱</button>
+  </span>
+  <span class="seg" data-group="theme">
+    <button type="button" data-v="system" aria-pressed="true">시스템</button>
+    <button type="button" data-v="light" aria-pressed="false">라이트</button>
+    <button type="button" data-v="dark" aria-pressed="false">다크</button>
+  </span>
+  <span>기준일 <span class="num">2026-11-07</span></span>
+</div>
+
+<div class="mock-stage">
+  <div class="frame" id="frame" data-w="mobile">
+    <header class="site-header">
+      <a class="brand" href="#" data-go="home">일본취준 다리<small>가칭</small></a>
+      <nav class="nav header-nav-desktop" aria-label="주요 메뉴" id="nav-d"></nav>
+      <button class="icon-btn" type="button" id="theme-cycle" aria-label="테마 바꾸기">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.25" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.75a6.25 6.25 0 0 1 0 12.5z" fill="currentColor"/></svg>
+      </button>
+    </header>
+    <nav class="nav-mobile" aria-label="주요 메뉴" id="nav-m"></nav>
+    <main id="main"></main>
+    <footer class="site-footer">
+      <p><strong>채용 정보는 매년 바뀌니 지원 전 공식 요강을 확인하세요.</strong> 이 사이트의 기업 정보는 각 기업 공식 채용 페이지를 보고 사람이 직접 정리한 것이며, 페이지마다 출처와 확인일을 적어두었습니다.</p>
+      <p>틀린 정보나 바뀐 내용을 발견하면 알려주세요.</p>
+    </footer>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const DATA = {"checkedAt": "2026-11-08", "industry": "게임", "targetYear": "28졸 (2028년 졸업)", "companies": [{"id": "cygames", "name": "사이게임즈", "nameJa": "Cygames", "guideStatus": "28졸 요강 공개", "guideYear": 28, "locations": "도쿄, 오사카 (사가 거점은 별도 요강)", "roles": ["총합직", "기술직", "디자이너직", "사운드직", "만화편집직", "애니메 제작직", "글로벌 사업직", "연구직", "코퍼레이트직"], "flow": "선발 3종류: 특별선발(인턴 성적 우수자·장기 인턴 참가자) / 조기선발(Cygames Future Creators 등록자, 2026-09-25 마감) / 통상선발(전원, 1회만 응모 가능). 서류는 직종별 지정 서류 전부 제출 후 순차 진행.", "pay": "학부졸 기본연봉 372.6만엔(월 31.05만엔). 월 45시간 고정잔업수당·20시간 심야수당 포함. 인센티브 포함 연간 460~490만엔 목표.", "foreigner": "내정 후 취업비자 절차가 필요하며 회사 지원 안내가 있다고 명시. 선발 단계에서의 취급은 기재 없음.", "japanese": "기재 없음", "notes": ["월급에 고정잔업(みなし残業) 45시간분이 포함된 구조. 다른 회사 초임과 단순 비교하면 안 됨.", "통상선발은 정원 차면 예고 없이 종료. 1회차 응모가 유리."], "sources": [{"label": "募集要項", "url": "https://fresh.cygames.co.jp/recruit/guideline/"}, {"label": "選考フロー", "url": "https://fresh.cygames.co.jp/recruit/flow/"}]}, {"id": "capcom", "name": "캡콤", "nameJa": "カプコン", "guideStatus": "28졸 요강 공개", "guideYear": 28, "locations": "개발직: 오사카·도쿄 / 총합직: 부문별 (직영 어뮤즈먼트 시설 초기 배속 포함)", "roles": ["개발직: 아티스트", "개발직: 프로그래머/엔지니어", "개발직: 기획", "개발직: 사운드", "총합직"], "flow": "기획: 서류(ES·앙케이트·과제) → 그룹 디스커션 → 1차 면접(웹 적성검사) → 2차 면접 → 내정. 아티스트는 작품 제출, 프로그래머는 웹테스트, 사운드는 과제. 총합직은 서류 → 복수 면접.", "pay": "기준보수 월 30만엔 이상. 주식보수 초년도 140주 권리 부여.", "foreigner": "기재 없음", "japanese": "기재 없음", "notes": ["본사가 오사카. 개발직은 오사카 배속 가능성을 염두에.", "2028년 3월까지 졸업 예정자 또는 기졸업자 대상, 학부 무관."], "sources": [{"label": "新卒募集要項", "url": "https://www.capcom.co.jp/recruit/guidelines/graduate/"}, {"label": "採用トップ(NEWS)", "url": "https://www.capcom.co.jp/recruit/"}]}, {"id": "square-enix", "name": "스퀘어 에닉스", "nameJa": "スクウェア・エニックス", "guideStatus": "27졸 기준 (28졸 미공개)", "guideYear": 27, "locations": "도쿄(신주쿠·시부야), 오사카", "roles": ["총합직", "출판 관련직", "게임 디자이너", "엔지니어", "아티스트", "테크니컬 아티스트", "사운드 디자이너", "IT 엔지니어"], "flow": "마이페이지 등록 → 직종 선택·ES·적성검사 → (일부 직종) 프로그래밍 테스트/포트폴리오/기획서 → 서류전형 → 면접 2~4회 → 내정. 1개 직종만 지원 가능. (27졸 기준, 27졸은 2026-02-01 마이페이지 오픈)", "pay": "4년제 대학 28.8만엔 이상 (2025-11-01 기준, 확정급여형 연금 거출분 포함)", "foreigner": "국적은 지원 자격에 영향 없음. 외국 국적 입사 실적 있고 입사 절차 지원. 해외 대학생도 지원 가능(일부 전형 대면 필요).", "japanese": "필수. 전형 전 과정 일본어로 진행. 영어는 해외영업 등 일부 직무만.", "notes": ["5곳 중 외국인 관련 안내가 가장 구체적.", "졸업 후 정사원·계약사원 경력이 있으면 신졸 대상에서 제외."], "sources": [{"label": "募集要項・Q&A", "url": "https://www.jp.square-enix.com/recruit/fresh/recruitment/"}, {"label": "新卒採用トップ", "url": "https://www.jp.square-enix.com/recruit/fresh/"}]}, {"id": "sega", "name": "세가", "nameJa": "セガ", "guideStatus": "27졸 기준 (28졸 엔트리는 오픈)", "guideYear": 27, "locations": "도쿄 시나가와구 (오사키 오피스)", "roles": ["게임 플래너", "프로그래머", "디자이너", "사운드", "총합직"], "flow": "공통: 프리엔트리 → 회사설명회. 플래너: 서류(기획서·자기PR 동영상) → 선고회 → 1차 → 최종 → 내정. 프로그래머: 서류(작품·포트폴리오) → 선고회 → 1차 → 최종. 디자이너·사운드: 서류(포트폴리오) → 1차 → 최종. 총합직: 서류(자기PR 동영상) → 인사면접 → 복수 면접.", "pay": "학사 월 33만엔 (라이프플랜 수당 포함, 27졸 기준)", "foreigner": "해외대 유학생·해외 거주 경험자·외국 국적자 대상 별도 모집이 있으며 외부 페이지(CFN)에서 응모.", "japanese": "기재 없음", "notes": ["외국 국적자 전용 루트가 따로 있다는 게 핵심. 일반 루트와 비교해볼 것.", "자기PR 동영상 제출이 있어서 일본어 말하기 준비가 필요."], "sources": [{"label": "募集要項", "url": "https://www.sega.co.jp/recruit/fresh/details/"}, {"label": "新卒採用トップ", "url": "https://www.sega.co.jp/recruit/fresh/"}]}, {"id": "bandai-namco-ent", "name": "반다이남코 엔터테인먼트", "nameJa": "バンダイナムコエンターテインメント", "guideStatus": "27졸 기준 (28졸 엔트리는 오픈)", "guideYear": 27, "locations": "도쿄 미나토구 시바 (본사)", "roles": ["총합직 (프로듀스, 마케팅, 세일즈, 품질보증/고객대응, 디지털 테크놀로지, 법무·지재, 코퍼레이트 등)"], "flow": "요강 페이지에 기재 없음 (별도 選考プロセス 페이지)", "pay": "월 29만엔 (27졸 기준)", "foreigner": "기재 없음", "japanese": "기재 없음", "notes": ["총합직만 채용, 27졸 기준 30명 정도. 게임 개발(프로그래머·디자이너)은 자회사 반다이남코 스튜디오가 따로 채용.", "졸업 후 정사원 경력 1년 미만이면 지원 가능 (27졸 기준)."], "sources": [{"label": "募集要項", "url": "https://www.bandainamcoent.co.jp/job/grad/recruit/information/"}, {"label": "新卒採用トップ", "url": "https://www.bandainamcoent.co.jp/job/grad/"}]}], "events": [{"company": "capcom", "date": "2026-11-02", "title": "28졸 엔트리 접수 시작", "kind": "엔트리"}, {"company": "bandai-namco-ent", "date": "2026-11-21", "title": "리크나비 WEB 합동설명회 참가", "kind": "설명회"}, {"company": "cygames", "date": "2026-12-01", "end": "2026-12-18", "title": "통상선발 1회차 응모 (15:00~15:00)", "kind": "응모"}, {"company": "cygames", "date": "2027-02-01", "end": "2027-02-12", "title": "통상선발 2회차 응모", "kind": "응모"}, {"company": "sega", "date": "2027-02-26", "title": "플래너 1day 응모 마감 (23:59)", "kind": "인턴", "sourceNote": "キャリタス就活 게재 정보"}, {"company": "cygames", "date": "2027-03-01", "end": "2027-03-12", "title": "통상선발 3회차 응모", "kind": "응모"}, {"company": "cygames", "date": "2027-05-17", "end": "2027-05-28", "title": "통상선발 4회차 응모", "kind": "응모"}]};
+const TODAY = new Date("2026-11-07T00:00:00");
+const TARGET = 28; // targetYear 숫자 (스키마 제안 참고)
+const DOW = ["일","월","화","수","목","금","토"];
+const byId = Object.fromEntries(DATA.companies.map(c => [c.id, c]));
+const state = { view: "home", co: "cygames", added: new Set() };
+
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+const d = s => new Date(s + "T00:00:00");
+const daysUntil = s => Math.round((d(s) - TODAY) / 86400000);
+const md = s => { const x = d(s); return `${x.getMonth()+1}.${String(x.getDate()).padStart(2,"0")}`; };
+const dow = s => DOW[d(s).getDay()];
+const ext = '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5 3h6v6M11 3 4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+
+/* 일정 상태: 마감 기준일 = end ?? date */
+function eventStatus(ev) {
+  const last = ev.end ?? ev.date;
+  const n = daysUntil(last);
+  if (n < 0) return { cls: "past", label: "지남" };
+  if (ev.end && daysUntil(ev.date) > 0) {
+    return n <= 7 ? { cls: "danger", label: `마감 D-${n}` } : { cls: "plain", label: `시작 D-${daysUntil(ev.date)}` };
+  }
+  if (ev.end) return n <= 7 ? { cls: "danger", label: `마감 임박 D-${n}` } : { cls: "ok", label: `진행 중 · D-${n}` };
+  if (n === 0) return { cls: "danger", label: "오늘" };
+  return n <= 7 ? { cls: "danger", label: `마감 임박 D-${n}` } : { cls: "plain", label: `D-${n}` };
+}
+
+function guideChip(c) {
+  return c.guideYear >= TARGET
+    ? `<span class="chip chip--ok">${TARGET}졸 요강 공개</span>`
+    : `<span class="chip chip--warn">${c.guideYear}졸 기준</span>`;
+}
+
+function eventKey(ev) { return `${ev.company}|${ev.date}|${ev.title}`; }
+
+function eventRow(ev, { showCompany = true } = {}) {
+  const st = eventStatus(ev);
+  const c = byId[ev.company];
+  const past = st.cls === "past";
+  const key = eventKey(ev);
+  const added = state.added.has(key);
+  return `<li class="event-row${past ? " is-past" : ""}">
+    <div class="event-date num">${md(ev.date)} <span class="dow">(${dow(ev.date)})</span>${ev.end ? `<span class="range">~ ${md(ev.end)} (${dow(ev.end)})</span>` : ""}</div>
+    <div class="event-body">
+      ${showCompany ? `<a class="event-company" href="#" data-go="company" data-co="${c.id}">${esc(c.name)}</a>` : ""}
+      <div class="event-title">${esc(ev.title)}</div>
+      <div class="event-meta">
+        <span class="chip chip--plain">${esc(ev.kind)}</span>
+        <span class="chip chip--${st.cls} num">${st.label}</span>
+        ${ev.sourceNote ? `<span class="event-note">${esc(ev.sourceNote)}</span>` : ""}
+        ${past ? "" : `<button class="event-add" type="button" data-add="${esc(key)}" aria-pressed="${added}">${added ? "추가됨" : "+ 내 캘린더"}</button>`}
+      </div>
+    </div>
+  </li>`;
+}
+
+function sourceLine(sources, checkedAt) {
+  return `<p class="source-line"><span class="lbl">출처</span>${sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener" lang="ja">${esc(s.label)}</a>`).join('<span class="sep">·</span>')}<span class="sep">|</span><span class="checked"><span class="lbl">확인일</span><span class="num">${checkedAt}</span></span></p>`;
+}
+
+function nav() {
+  const items = [["home","홈"],["guide","가이드"],["companies","기업"],["calendar","캘린더"]];
+  const cur = state.view === "company" ? "companies" : state.view;
+  const html = items.map(([k,l]) => `<a href="#" data-go="${k === "companies" ? "company" : k}" ${k === cur ? 'aria-current="page"' : ""}>${l}</a>`).join("");
+  document.getElementById("nav-d").innerHTML = html;
+  document.getElementById("nav-m").innerHTML = html;
+}
+
+function renderHome() {
+  const upcoming = DATA.events
+    .filter(e => daysUntil(e.end ?? e.date) >= 0)
+    .sort((a,b) => (a.end ?? a.date).localeCompare(b.end ?? b.date) || a.date.localeCompare(b.date))
+    .slice(0, 5);
+  const recentPast = DATA.events.filter(e => daysUntil(e.end ?? e.date) < 0).slice(-1);
+  const posts = [
+    ["일본 신졸 채용 구조 한눈에 보기", "新卒一括採用", "new", "2026-11-07"],
+    ["취준 용어 사전: ES, SPI, 内々定…", "就活用語", "new", "2026-11-07"],
+    ["28졸 연간 일정: 인턴부터 내정까지", "スケジュール", "new", "2026-11-07"],
+    ["외국인 신졸의 취업 비자 기초", "在留資格「技術・人文知識・国際業務」", "new", "2026-11-07"],
+  ];
+  return `
+  <section class="section track-intro" aria-labelledby="t-h">
+    <h1 id="t-h">나는 어떤 경우?</h1>
+    <p>상황에 따라 준비 순서가 달라요. 해당하는 쪽을 골라주세요.</p>
+    <ul class="track-list">
+      <li class="track-item" data-track="new"><a href="#">
+        <span class="bar" aria-hidden="true"></span>
+        <span><div class="t-name">신졸<span class="ja" lang="ja">新卒</span></div>
+        <div class="t-desc">일본 대학·대학원 졸업 예정. ${DATA.targetYear} 기준으로 정리 중.</div>
+        <div class="t-meta num">가이드 4 · 기업 ${DATA.companies.length} · 일정 ${DATA.events.length}</div></span>
+        <span class="arrow" aria-hidden="true">›</span></a></li>
+      <li class="track-item" data-track="direct" data-empty><a href="#">
+        <span class="bar" aria-hidden="true"></span>
+        <span><div class="t-name">한국에서 바로</div>
+        <div class="t-desc">한국 대학 졸업(예정) 후 일본 기업에 직접 지원.</div>
+        <div class="t-meta empty">준비 중 · 경험 공유해주실 분 구해요</div></span>
+        <span class="arrow" aria-hidden="true">›</span></a></li>
+      <li class="track-item" data-track="career" data-empty><a href="#">
+        <span class="bar" aria-hidden="true"></span>
+        <span><div class="t-name">경력 이직<span class="ja" lang="ja">中途</span></div>
+        <div class="t-desc">한국·일본에서 일한 경력으로 일본 기업에 이직.</div>
+        <div class="t-meta empty">준비 중 · 경험 공유해주실 분 구해요</div></span>
+        <span class="arrow" aria-hidden="true">›</span></a></li>
+    </ul>
+  </section>
+
+  <div class="home-cols">
+    <section class="section" aria-labelledby="e-h">
+      <div class="section-head"><h2 class="section-title" id="e-h">다가오는 일정</h2><a class="section-link" href="#" data-go="calendar">캘린더 전체 ›</a></div>
+      <ul class="event-list">${upcoming.map(e => eventRow(e)).join("")}${recentPast.map(e => eventRow(e)).join("")}</ul>
+      <div class="legend"><span class="chip chip--danger">마감 임박</span> 7일 이내 <span class="chip chip--ok">진행 중</span> 응모 기간 안 <span class="chip chip--past">지남</span></div>
+    </section>
+    <section class="section" aria-labelledby="p-h">
+      <div class="section-head"><h2 class="section-title" id="p-h">최근 가이드</h2><a class="section-link" href="#">전체 ›</a></div>
+      <ul class="post-list">${posts.map(([t,ja,tr,dt]) => `<li><a href="#">${esc(t)}</a><div class="post-meta"><span class="track-badge" data-track="${tr}">신졸</span><span lang="ja">${esc(ja)}</span><span class="num">· ${dt}</span></div></li>`).join("")}</ul>
+    </section>
+  </div>`;
+}
+
+function flowHtml(flow) {
+  // 요강 원문이 문장형이라 "→"가 있는 문장만 단계로 쪼개고, 나머지는 문단으로 둠
+  const parts = flow.split(/(?<=\.)\s+/).map(s => s.trim()).filter(Boolean);
+  return parts.map(p => {
+    if (!p.includes("→")) return `<p class="flow-text">${esc(p)}</p>`;
+    const m = p.match(/^([^:：]{1,20})[:：]\s*(.+)$/);
+    const label = m ? m[1] : "";
+    const steps = (m ? m[2] : p).replace(/\.$/, "").split("→").map(s => s.trim()).filter(Boolean);
+    return `<div class="flow-group">${label ? `<div class="flow-label">${esc(label)}</div>` : ""}<ol class="flow-steps">${steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></div>`;
+  }).join("");
+}
+
+function fbRow(label, value) {
+  const missing = !value || value.trim() === "기재 없음";
+  return `<div class="fb-row${missing ? " is-missing" : ""}"><dt>${label}</dt><dd>${missing ? `공식 요강에 기재 없음<em>설명회나 인사 담당자에게 직접 확인해보세요.</em>` : esc(value)}</dd></div>`;
+}
+
+function renderCompany() {
+  const c = byId[state.co];
+  const evs = DATA.events.filter(e => e.company === c.id).sort((a,b) => a.date.localeCompare(b.date));
+  const tracked = state.added.has("co|" + c.id);
+  const old = c.guideYear < TARGET;
+  return `
+  <nav class="crumbs" aria-label="위치"><a href="#">기업</a> › <a href="#">${esc(DATA.industry)}</a> › ${esc(c.name)}</nav>
+  <div class="detail-cols">
+    <article class="detail-main">
+      <header class="co-head" id="s-summary">
+        <h1>${esc(c.name)}<span class="ja" lang="ja">${esc(c.nameJa)}</span></h1>
+        <div class="chips">${guideChip(c)}<span class="chip chip--plain">${esc(DATA.industry)}</span><span class="track-badge" data-track="new">신졸</span></div>
+        ${old ? `<div class="notice" role="note"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5 13 12.5H1z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7 5.5v3M7 10.2v.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><div><strong>${TARGET}졸 요강이 아직 안 나왔어요.</strong> 아래는 ${c.guideYear}졸 요강 기준이라 일정·초임·전형이 바뀔 수 있어요. <span class="ja">(${esc(c.guideStatus)})</span></div></div>` : ""}
+        <div class="co-actions">
+          <button class="btn btn--primary" type="button" data-track-co="${c.id}" aria-pressed="${tracked}">${tracked ? "내 전형에 추가됨" : "내 전형에 추가"}</button>
+          <a class="btn" href="${esc(c.sources[0].url)}" target="_blank" rel="noopener">공식 요강 ${ext}</a>
+        </div>
+      </header>
+
+      <section class="foreigner-box" aria-labelledby="fb-h" id="s-foreigner">
+        <header><span id="fb-h" style="color:inherit;font-weight:700;font-size:var(--fs-sm)">외국인 지원자 체크</span><span>국적 · 비자 · 일본어</span></header>
+        <dl>
+          ${fbRow("국적·비자", c.foreigner)}
+          ${fbRow("일본어", c.japanese)}
+        </dl>
+      </section>
+
+      <section class="block" id="s-flow" aria-labelledby="flow-h">
+        <h2 id="flow-h">전형 흐름 <span class="ja" lang="ja">選考フロー</span></h2>
+        ${flowHtml(c.flow)}
+      </section>
+
+      <section class="block" id="s-terms" aria-labelledby="terms-h">
+        <h2 id="terms-h">초임 · 근무지 · 직종</h2>
+        <dl class="facts">
+          <div><dt>초임 <span class="ja" lang="ja">初任給</span></dt><dd>${esc(c.pay)}</dd></div>
+          <div><dt>근무지</dt><dd>${esc(c.locations)}</dd></div>
+          <div><dt>모집 직종</dt><dd><ul class="roles">${c.roles.map(r => `<li>${esc(r)}</li>`).join("")}</ul></dd></div>
+        </dl>
+      </section>
+
+      ${c.notes.length ? `<section class="block" aria-labelledby="memo-h"><h2 id="memo-h">정리하면서 메모</h2><ul class="memo">${c.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul></section>` : ""}
+
+      ${evs.length ? `<section class="block" aria-labelledby="ev-h" id="s-events"><h2 id="ev-h">관련 일정</h2><ul class="event-list">${evs.map(e => eventRow(e, { showCompany: false })).join("")}</ul></section>` : ""}
+
+      <div id="s-source">${sourceLine(c.sources, DATA.checkedAt)}</div>
+    </article>
+
+    <aside class="detail-aside aside-mobile-hide" aria-label="보조 정보">
+      <div class="aside-panel">
+        <h3>이 페이지</h3>
+        <ul class="toc">
+          <li><a href="#s-summary">요약</a></li><li><a href="#s-foreigner">외국인 지원자 체크</a></li>
+          <li><a href="#s-flow">전형 흐름</a></li><li><a href="#s-terms">초임 · 근무지 · 직종</a></li>
+          ${evs.length ? '<li><a href="#s-events">관련 일정</a></li>' : ""}<li><a href="#s-source">출처</a></li>
+        </ul>
+      </div>
+      <div class="aside-panel">
+        <h3>같은 업계</h3>
+        <ul class="toc">${DATA.companies.filter(x => x.id !== c.id).map(x => `<li><a href="#" data-go="company" data-co="${x.id}">${esc(x.name)}</a></li>`).join("")}</ul>
+      </div>
+    </aside>
+  </div>`;
+}
+
+function render() {
+  nav();
+  document.getElementById("main").innerHTML = state.view === "company" ? renderCompany() : (state.view === "home" ? renderHome() : `<p style="color:var(--text-muted)">이 화면은 홈·기업 상세 확인 후에 만들 예정이에요.</p>`);
+  document.querySelectorAll('[data-group="view"] button').forEach(b => b.setAttribute("aria-pressed", b.dataset.v === state.view));
+  document.getElementById("co-select").value = state.co;
+}
+
+function toast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 1600); }
+
+const sel = document.getElementById("co-select");
+sel.innerHTML = DATA.companies.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+sel.addEventListener("change", () => { state.co = sel.value; state.view = "company"; render(); });
+
+document.addEventListener("click", e => {
+  const go = e.target.closest("[data-go]");
+  if (go) { e.preventDefault(); state.view = go.dataset.go; if (go.dataset.co) state.co = go.dataset.co; render(); window.scrollTo(0,0); return; }
+  const add = e.target.closest("[data-add]");
+  if (add) { const k = add.dataset.add; state.added.has(k) ? state.added.delete(k) : state.added.add(k); toast(state.added.has(k) ? "내 캘린더에 추가했어요 (이 브라우저에 저장)" : "내 캘린더에서 뺐어요"); render(); return; }
+  const tc = e.target.closest("[data-track-co]");
+  if (tc) { const k = "co|" + tc.dataset.trackCo; state.added.has(k) ? state.added.delete(k) : state.added.add(k); toast(state.added.has(k) ? "내 전형 관리에 추가했어요" : "내 전형 관리에서 뺐어요"); render(); return; }
+  const seg = e.target.closest(".seg button");
+  if (seg) {
+    const g = seg.parentElement.dataset.group;
+    seg.parentElement.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b === seg));
+    if (g === "view") { state.view = seg.dataset.v; render(); }
+    if (g === "w") document.getElementById("frame").dataset.w = seg.dataset.v;
+    if (g === "theme") setTheme(seg.dataset.v);
+  }
+});
+function setTheme(v) {
+  if (v === "system") document.documentElement.removeAttribute("data-theme"); else document.documentElement.dataset.theme = v;
+  document.querySelectorAll('[data-group="theme"] button').forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
+}
+document.getElementById("theme-cycle").addEventListener("click", () => {
+  const cur = document.documentElement.dataset.theme;
+  const dark = cur ? cur === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  setTheme(dark ? "light" : "dark");
+});
+render();
+</script>
+</body>
+</html>
