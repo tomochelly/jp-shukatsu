@@ -1,0 +1,82 @@
+---
+/** 기업 목록 한 줄: 이름 / 요강 상태 / 근무지 / 외국인·일본어 안내 유무 */
+import GuideStatusChip from './GuideStatusChip.astro';
+import type { CompanyEntry } from '~/lib/companies';
+
+interface Props {
+  company: CompanyEntry;
+}
+const { company: c } = Astro.props;
+const missing = (v: string) => v.trim() === '' || v.trim() === '기재 없음';
+const flags = [
+  { label: '국적·비자', has: !missing(c.foreigner) },
+  { label: '일본어', has: !missing(c.japanese) },
+];
+---
+<li class="co">
+  <div class="top">
+    <a class="name" href={`/companies/${c.id}/`}>
+      {c.name}<span class="ja" lang="ja">{c.nameJa}</span>
+    </a>
+    <GuideStatusChip guideYear={c.guideYear} targetYear={c.targetYear} />
+  </div>
+  <p class="loc">{c.locations}</p>
+  <ul class="flags" aria-label="요강의 외국인 관련 안내">
+    {flags.map((f) => (
+      <li class:list={{ has: f.has }}>
+        {f.label} <span>{f.has ? '안내 있음' : '기재 없음'}</span>
+      </li>
+    ))}
+  </ul>
+</li>
+
+<style>
+  .co {
+    padding: var(--sp-4) 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--sp-2) var(--sp-3);
+  }
+  .name {
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+    text-decoration: none;
+  }
+  .name:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .name .ja {
+    margin-left: var(--sp-2);
+    font-size: var(--fs-xs);
+  }
+  .loc {
+    margin-top: var(--sp-1);
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+  .flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-1) var(--sp-4);
+    margin-top: var(--sp-2);
+    padding: 0;
+    list-style: none;
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+  }
+  .flags span {
+    font-weight: var(--fw-semibold);
+  }
+  .flags .has {
+    color: var(--text-muted);
+  }
+  .flags .has span {
+    color: var(--accent);
+  }
+</style>
