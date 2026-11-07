@@ -20,7 +20,7 @@ npm run preview:worker  # 빌드 후 Workers 환경으로 미리보기 (localhos
 - `assets.directory: ./dist`
 - `not_found_handling: "404-page"`: 없는 경로는 `dist/404.html`을 404로 응답
 - `html_handling: "auto-trailing-slash"`: `/companies/cygames` → `/companies/cygames/`
-- `preview_urls: true`: 버전·브랜치별 미리보기 주소 사용
+- `preview_urls: true`: 브랜치별 미리보기 주소 사용
 - `public/_headers`의 응답 헤더가 그대로 적용됨
 
 나중에 로그인·D1이 필요해지면 `wrangler.jsonc`에 `main`(Worker 코드)과 `d1_databases`를 추가합니다.
@@ -33,29 +33,34 @@ npm run preview:worker   # 빌드 후 wrangler dev → http://localhost:8787 (40
 
 ### GitHub 연결 (Workers Builds)
 
-> 대시보드 메뉴 이름은 바뀔 수 있어서, 확실하지 않은 것은 **(확인 필요)** 로 표시했습니다.
-
-1. Cloudflare 대시보드 → **Workers & Pages** → **Create** (확인 필요)
-2. **Import a repository** / **Connect to Git** 중 GitHub 저장소 가져오기 항목 선택 (확인 필요)
+1. Cloudflare 대시보드 → **Workers & Pages**에서 새 Worker 만들기 → Git 저장소 연결
    → GitHub 연결 후 `tomochelly/jp-shukatsu` 선택
-3. 설정
-   - **Project name(Worker 이름): `jp-shukatsu`** — `wrangler.jsonc`의 `name`과 같아야 빌드가 성공함
+2. 설정
+   - **Worker 이름: `jp-shukatsu`**: `wrangler.jsonc`의 `name`과 같아야 빌드가 성공함
    - Production branch: `main`
    - Build command: `npm run build`
    - Deploy command: `npx wrangler deploy` (기본값)
-   - Non-production branch deploy command: `npx wrangler versions upload` (기본값, 확인 필요)
+   - Non-production branch deploy command: `npx wrangler versions upload` (기본값)
    - Root directory: 비워둠 (저장소 루트)
-   - Build variables: `NODE_VERSION` = `22` (빌드 이미지 기본 Node가 낮으면 필요, 확인 필요)
-4. 저장하면 첫 배포 → `https://jp-shukatsu.<계정 서브도메인>.workers.dev`
+   - Wrangler 버전: 빌드 때 `package.json`(devDependencies)에 적힌 버전을 씀. 올리려면 `npm install -D wrangler@4`
+   - Build variables: `NODE_VERSION`: **확인 필요** (첫 빌드 로그의 Node 버전을 보고, 22보다 낮으면 `22`로 지정)
+3. 저장하면 첫 배포 → `https://jp-shukatsu.<계정 서브도메인>.workers.dev`
 
-### 커밋마다 미리보기
+### 브랜치 미리보기 (PR로 확인 후 머지)
 
-- `main`에 푸시 → 빌드 후 실제 사이트에 배포
+처음 한 번: Worker의 **Settings > Build > Branch control**에서
+**"Builds for non-production branches"** 체크.
+
+- `main`에 푸시·머지 → 빌드 후 실제 사이트에 배포
 - 다른 브랜치에 푸시 → 빌드 후 `wrangler versions upload`로 **실제 사이트는 그대로 두고** 새 버전만 올림
-  - 버전별 미리보기: `https://<버전 id 앞부분>-jp-shukatsu.<서브도메인>.workers.dev`
-  - 브랜치별 고정 주소: `https://<브랜치 이름>-jp-shukatsu.<서브도메인>.workers.dev` (확인 필요)
-  - 미리보기 주소는 Worker의 **Deployments / Versions** 화면과 GitHub 커밋 상태(체크)에서 확인 (확인 필요)
-- 비(非)프로덕션 브랜치 빌드가 꺼져 있으면 Worker 설정 → **Build** → Branch control에서 켜기 (확인 필요)
+  - 브랜치별 고정 주소: `https://<브랜치 이름>-jp-shukatsu.<서브도메인>.workers.dev`
+    (같은 브랜치에 다시 푸시하면 같은 주소가 최신으로 바뀜)
+  - PR을 열면 미리보기 주소가 PR에 댓글로 달림
+  - 브랜치 이름은 주소에 들어가므로 영소문자·숫자·하이픈 권장 (예: `step5-companies-list`)
+- 작업 흐름: 화면이 바뀌는 작업은 브랜치 → PR → 미리보기 확인 → 머지
+
+**미리보기 주소는 기본으로 공개**되어 있어 주소를 아는 누구나 볼 수 있습니다.
+제한하려면 **Settings > Domains & Routes > Preview URLs**에서 Cloudflare Access를 켭니다.
 
 빌드 중 데이터 검증이 실패하면 배포되지 않고 이전 버전이 그대로 남습니다
 (실패 이유는 해당 빌드 로그에서 확인).
