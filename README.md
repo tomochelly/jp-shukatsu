@@ -1,6 +1,6 @@
 # 일본취준 다리 (가칭)
 
-한국인을 위한 일본 취준 정보 사이트. Astro 정적 생성 + Cloudflare Pages.
+한국인을 위한 일본 취준 정보 사이트. Astro 정적 생성 + Cloudflare Workers (Static Assets).
 
 ## 개발
 
@@ -10,29 +10,64 @@ npm run dev      # http://localhost:4321
 npm run build    # dist/ 생성
 npm run check    # 타입 검사
 npm test         # 날짜·.ics·데이터 검증 테스트
+npm run preview:worker  # 빌드 후 Workers 환경으로 미리보기 (localhost:8787)
 ```
 
-## Cloudflare Pages 연결 (커밋마다 미리보기)
+## 배포: Cloudflare Workers (Static Assets)
 
-GitHub 저장소를 Pages에 연결하면 `main`에 올릴 때마다 실제 사이트가,
-다른 브랜치·PR에 올릴 때마다 미리보기 주소가 자동으로 만들어집니다.
+어댑터 없이 정적 빌드 결과(`dist/`)를 Worker의 정적 자산으로 올립니다. 설정은 `wrangler.jsonc`.
 
-1. Cloudflare 대시보드 → **Workers & Pages** → **Create** → **Pages** 탭 → **Connect to Git**
-2. GitHub 계정 연결 후 `tomochelly/jp-shukatsu` 선택 (비공개 저장소도 가능)
-3. 빌드 설정
-   - Framework preset: **Astro**
+- `assets.directory: ./dist`
+- `not_found_handling: "404-page"`: 없는 경로는 `dist/404.html`을 404로 응답
+- `html_handling: "auto-trailing-slash"`: `/companies/cygames` → `/companies/cygames/`
+- `preview_urls: true`: 버전·브랜치별 미리보기 주소 사용
+- `public/_headers`의 응답 헤더가 그대로 적용됨
+
+나중에 로그인·D1이 필요해지면 `wrangler.jsonc`에 `main`(Worker 코드)과 `d1_databases`를 추가합니다.
+
+### 로컬에서 실제 배포 환경처럼 보기
+
+```bash
+npm run preview:worker   # 빌드 후 wrangler dev → http://localhost:8787 (404·헤더까지 실제와 같게)
+```
+
+### GitHub 연결 (Workers Builds)
+
+> 대시보드 메뉴 이름은 바뀔 수 있어서, 확실하지 않은 것은 **(확인 필요)** 로 표시했습니다.
+
+1. Cloudflare 대시보드 → **Workers & Pages** → **Create** (확인 필요)
+2. **Import a repository** / **Connect to Git** 중 GitHub 저장소 가져오기 항목 선택 (확인 필요)
+   → GitHub 연결 후 `tomochelly/jp-shukatsu` 선택
+3. 설정
+   - **Project name(Worker 이름): `jp-shukatsu`** — `wrangler.jsonc`의 `name`과 같아야 빌드가 성공함
+   - Production branch: `main`
    - Build command: `npm run build`
-   - Build output directory: `dist`
-   - 환경 변수: `NODE_VERSION` = `22`
-4. **Save and Deploy** → `https://<프로젝트 이름>.pages.dev` 생성
-5. 미리보기: 설정 → **Builds & deployments** → Preview deployments를 **All non-production branches**로
-   - 커밋마다 `https://<커밋 해시>.<프로젝트>.pages.dev`
-   - 브랜치마다 `https://<브랜치 이름>.<프로젝트>.pages.dev` (항상 그 브랜치의 최신)
-   - PR에는 미리보기 주소가 댓글로 달림
+   - Deploy command: `npx wrangler deploy` (기본값)
+   - Non-production branch deploy command: `npx wrangler versions upload` (기본값, 확인 필요)
+   - Root directory: 비워둠 (저장소 루트)
+   - Build variables: `NODE_VERSION` = `22` (빌드 이미지 기본 Node가 낮으면 필요, 확인 필요)
+4. 저장하면 첫 배포 → `https://jp-shukatsu.<계정 서브도메인>.workers.dev`
+
+### 커밋마다 미리보기
+
+- `main`에 푸시 → 빌드 후 실제 사이트에 배포
+- 다른 브랜치에 푸시 → 빌드 후 `wrangler versions upload`로 **실제 사이트는 그대로 두고** 새 버전만 올림
+  - 버전별 미리보기: `https://<버전 id 앞부분>-jp-shukatsu.<서브도메인>.workers.dev`
+  - 브랜치별 고정 주소: `https://<브랜치 이름>-jp-shukatsu.<서브도메인>.workers.dev` (확인 필요)
+  - 미리보기 주소는 Worker의 **Deployments / Versions** 화면과 GitHub 커밋 상태(체크)에서 확인 (확인 필요)
+- 비(非)프로덕션 브랜치 빌드가 꺼져 있으면 Worker 설정 → **Build** → Branch control에서 켜기 (확인 필요)
 
 빌드 중 데이터 검증이 실패하면 배포되지 않고 이전 버전이 그대로 남습니다
-(실패 이유는 해당 배포의 빌드 로그에서 확인).
-미리보기 주소는 검색엔진에 노출되지 않도록 Pages가 `X-Robots-Tag: noindex`를 붙입니다.
+(실패 이유는 해당 빌드 로그에서 확인).
+
+### 직접 배포 (선택)
+
+GitHub 연결 없이 로컬에서 올릴 때 (`wrangler login` 필요):
+
+```bash
+npm run deploy           # 빌드 + 실제 사이트 배포
+npm run deploy:preview   # 빌드 + 미리보기 버전만 업로드
+```
 
 실제 도메인이 정해지면 `astro.config.mjs`의 `site`를 바꿔주세요 (canonical URL에 쓰임).
 

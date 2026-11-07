@@ -1,0 +1,20 @@
+// Cloudflare Workers (Static Assets) 설정.
+// 지금은 Worker 코드 없이 정적 파일(dist/)만 배포한다.
+// 나중에 로그인·D1이 필요해지면 "main"(Worker 진입점)과 "d1_databases"를 추가.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "jp-shukatsu",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    // 없는 경로는 dist/404.html을 404 상태로 응답
+    "not_found_handling": "404-page",
+    // /companies/cygames → /companies/cygames/ (Astro trailingSlash: 'always'와 맞춤)
+    "html_handling": "auto-trailing-slash"
+  },
+  // <이름>.<서브도메인>.workers.dev 주소 사용
+  "workers_dev": true,
+  // 버전·브랜치별 미리보기 주소 (<버전 또는 별칭>-jp-shukatsu.<서브도메인>.workers.dev)
+  "preview_urls": true,
+  "observability": { "enabled": true }
+}
