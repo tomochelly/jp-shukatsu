@@ -1,0 +1,101 @@
+/* =========================================================
+   디자인 토큰 — 색·간격·글자 크기는 전부 여기서만 정의한다.
+   컴포넌트에서 hex 값이나 px 간격을 직접 쓰지 말 것.
+
+   라이트/다크: light-dark()로 한 줄에 두 값을 같이 적는다.
+   - 기본은 시스템 설정을 따름 (color-scheme: light dark)
+   - 사용자가 고르면 <html data-theme="light|dark">로 고정
+   ========================================================= */
+:root {
+  color-scheme: light dark;
+
+  /* ---------- 글꼴 ---------- */
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  --font-ja: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", var(--font-sans);
+
+  /* ---------- 글자 크기 (모바일 기준) ---------- */
+  --fs-xs: 0.75rem;     /* 12 */
+  --fs-sm: 0.8125rem;   /* 13 */
+  --fs-base: 0.9375rem; /* 15 */
+  --fs-md: 1.0625rem;   /* 17 */
+  --fs-lg: 1.25rem;     /* 20 */
+  --fs-xl: 1.5rem;      /* 24 */
+  --fs-2xl: 1.875rem;   /* 30 */
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  --lh-tight: 1.35;
+  --lh-snug: 1.5;
+  --lh-body: 1.65;
+  --lh-prose: 1.8;
+
+  /* ---------- 간격 (4px 단위) ---------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* ---------- 모양·폭 ---------- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --measure: 65ch;      /* 가이드 본문 폭 */
+  --page-max: 1080px;
+  --gutter: var(--sp-4);
+  --header-h: 56px;
+
+  /* ---------- 중립 색 ---------- */
+  --bg:             light-dark(#f6f6f3, #141517);
+  --surface:        light-dark(#ffffff, #1c1d20);
+  --surface-sunken: light-dark(#efefeb, #111214);
+  --text:           light-dark(#1c1d1f, #e8e8e6);
+  --text-muted:     light-dark(#5c5f63, #a4a7ab);
+  --text-faint:     light-dark(#82858a, #7d8085);
+  --border:         light-dark(#e1e1dc, #2d2f33);
+  --border-strong:  light-dark(#c9c9c2, #42454a);
+
+  /* ---------- 악센트 (1개) ---------- */
+  --accent:       light-dark(#1b5e74, #7cc3d6);
+  --accent-hover: light-dark(#144a5c, #9dd3e2);
+  --accent-soft:  light-dark(#e5f0f2, #1b3038);
+  --on-accent:    light-dark(#ffffff, #0d1a1f);
+
+  /* ---------- 상태 색 (악센트와 별도로 관리) ---------- */
+  --ok:          light-dark(#1e7044, #6fcf97);   /* 공개됨·진행 중 */
+  --ok-soft:     light-dark(#e3f3e9, #173326);
+  --warn:        light-dark(#8a5800, #e6b450);   /* 주의·이전 연도 기준 */
+  --warn-soft:   light-dark(#fbf0d3, #362a12);
+  --danger:      light-dark(#b3261e, #f28b82);   /* 마감 임박 */
+  --danger-soft: light-dark(#fbe7e5, #3b1d1b);
+  --past:        light-dark(#82858a, #7d8085);   /* 지남 */
+  --past-soft:   light-dark(#ececea, #24262a);
+
+  /* ---------- 트랙 색 (살짝씩만 다르게) ---------- */
+  --track-new:         light-dark(#1b5e74, #7cc3d6); /* 신졸 */
+  --track-new-soft:    light-dark(#e5f0f2, #1b3038);
+  --track-direct:      light-dark(#95512a, #e0a27c); /* 한국에서 바로 */
+  --track-direct-soft: light-dark(#f6ebe3, #35251b);
+  --track-career:      light-dark(#4d5b63, #a9b7bf); /* 경력 이직 */
+  --track-career-soft: light-dark(#e8ecee, #262c30);
+
+  --focus-ring: 2px solid var(--accent);
+}
+
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }
+
+@media (min-width: 760px) {
+  :root {
+    --gutter: var(--sp-8);
+  }
+}

@@ -1,0 +1,59 @@
+---
+import { STORAGE_KEYS } from '~/lib/site';
+---
+<button class="theme-toggle" type="button" data-theme-toggle data-key={STORAGE_KEYS.theme} aria-label="다크 모드로 바꾸기">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <circle cx="8" cy="8" r="6.25" stroke="currentColor" stroke-width="1.5"></circle>
+    <path d="M8 1.75a6.25 6.25 0 0 1 0 12.5z" fill="currentColor"></path>
+  </svg>
+</button>
+
+<script>
+  // 시스템 설정을 기본으로 따르고, 버튼을 누르면 반대 모드로 고정해 저장한다.
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const root = document.documentElement;
+
+  function current(): 'light' | 'dark' {
+    const t = root.dataset.theme;
+    if (t === 'light' || t === 'dark') return t;
+    return mq.matches ? 'dark' : 'light';
+  }
+
+  function sync(btn: HTMLButtonElement) {
+    btn.setAttribute('aria-label', current() === 'dark' ? '라이트 모드로 바꾸기' : '다크 모드로 바꾸기');
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((btn) => {
+    sync(btn);
+    btn.addEventListener('click', () => {
+      const next = current() === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try {
+        localStorage.setItem(btn.dataset.key!, next);
+      } catch {
+        /* 저장 불가(사생활 보호 모드 등)면 이번 페이지에서만 적용 */
+      }
+      sync(btn);
+    });
+    mq.addEventListener('change', () => sync(btn));
+  });
+</script>
+
+<style>
+  .theme-toggle {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .theme-toggle:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+</style>

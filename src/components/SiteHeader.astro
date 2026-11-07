@@ -1,0 +1,86 @@
+---
+import { NAV, SITE, navKeyFor } from '~/lib/site';
+import ThemeToggle from './ThemeToggle.astro';
+
+const current = navKeyFor(Astro.url.pathname);
+---
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href="/">
+      {SITE.name}<small>{SITE.nameNote}</small>
+    </a>
+    <nav class="nav nav--desktop" aria-label="주요 메뉴">
+      {NAV.map((n) => (
+        <a href={n.href} aria-current={n.key === current ? 'page' : undefined}>{n.label}</a>
+      ))}
+    </nav>
+    <ThemeToggle />
+  </div>
+  <nav class="nav nav--mobile container" aria-label="주요 메뉴">
+    {NAV.map((n) => (
+      <a href={n.href} aria-current={n.key === current ? 'page' : undefined}>{n.label}</a>
+    ))}
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    min-height: var(--header-h);
+  }
+  .brand {
+    font-weight: var(--fw-bold);
+    font-size: var(--fs-md);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .brand small {
+    font-weight: var(--fw-medium);
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+    margin-left: var(--sp-1);
+  }
+  .nav {
+    display: flex;
+    gap: var(--sp-5);
+    font-size: var(--fs-sm);
+  }
+  .nav a {
+    text-decoration: none;
+    color: var(--text-muted);
+    padding: var(--sp-2) 0;
+    white-space: nowrap;
+  }
+  .nav a:hover {
+    color: var(--text);
+  }
+  .nav a[aria-current='page'] {
+    color: var(--text);
+    font-weight: var(--fw-semibold);
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+  .nav--desktop {
+    display: none;
+  }
+  .nav--mobile {
+    border-top: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  @media (min-width: 760px) {
+    .nav--desktop {
+      display: flex;
+    }
+    .nav--mobile {
+      display: none;
+    }
+  }
+</style>

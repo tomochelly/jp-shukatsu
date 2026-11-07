@@ -1,0 +1,40 @@
+---
+import { SITE } from '~/lib/site';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="container inner">
+    <p class="notice">
+      <strong>채용 정보는 매년 바뀌니 지원 전 공식 요강을 확인하세요.</strong>{' '}
+      이 사이트의 기업 정보는 각 기업 공식 채용 페이지를 보고 사람이 직접 정리한 것이며, 페이지마다 출처와 확인일을 적어두었습니다.
+    </p>
+    <p class="sub">
+      날짜와 마감은 일본 시간(JST) 기준입니다. 틀린 정보나 바뀐 내용을 발견하면 알려주세요.
+    </p>
+    <p class="sub">© <span class="num">{year}</span> {SITE.name} ({SITE.nameNote})</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: auto;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+  }
+  .inner {
+    padding-block: var(--sp-6) var(--sp-10);
+  }
+  .inner p {
+    max-width: var(--measure);
+  }
+  .notice strong {
+    color: var(--text);
+    font-weight: var(--fw-semibold);
+  }
+  .sub {
+    margin-top: var(--sp-2);
+    color: var(--text-faint);
+  }
+</style>

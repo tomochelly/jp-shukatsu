@@ -1,0 +1,10 @@
+---
+// 첫 렌더링 전에 저장된 테마를 적용해 깜빡임을 막는다. <head> 안에서만 사용.
+import { STORAGE_KEYS } from '~/lib/site';
+---
+<script is:inline define:vars={{ key: STORAGE_KEYS.theme }}>
+  try {
+    var t = localStorage.getItem(key);
+    if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+  } catch (e) {}
+</script>
