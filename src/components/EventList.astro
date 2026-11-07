@@ -1,24 +1,55 @@
 ---
+/**
+ * 일정 목록. 상태는 EventRow가 보는 시점의 일본 시간으로 다시 계산한다.
+ * upcomingLimit을 주면 "지난 일정을 빼고 앞에서 N개"만 보여준다
+ * (빌드 때 한 번 고르고, 브라우저에서 시간이 지나면 다시 고름).
+ */
 import type { EventEntry } from '~/lib/companies';
+import { eventStatus } from '~/lib/dates';
 import EventRow from './EventRow.astro';
 
 interface Props {
   events: readonly EventEntry[];
   showCompany?: boolean;
   emptyText?: string;
+  /** 지난 일정 제외 + 최대 N개 */
+  upcomingLimit?: number;
   now?: Date;
 }
-const { events, showCompany = true, emptyText = '표시할 일정이 없어요.', now } = Astro.props;
+const { events, showCompany = true, emptyText = '표시할 일정이 없어요.', upcomingLimit, now = new Date() } = Astro.props;
+
+// upcomingLimit이 있으면 빌드 시점 기준 지난 일정은 아예 빼고, 나머지 중 N개 초과분은 숨겨서 렌더링
+const rows = upcomingLimit === undefined ? events : events.filter((e) => eventStatus(e, e.timezone, now).phase !== 'past');
 ---
-<div class="event-list-wrap">
-  {events.length === 0 ? (
-    <p class="empty">{emptyText}</p>
-  ) : (
+<div class="event-list-wrap" data-event-list data-upcoming-limit={upcomingLimit}>
+  <p class="empty" data-empty hidden={rows.length > 0}>{emptyText}</p>
+  {rows.length > 0 && (
     <ul class="event-list">
-      {events.map((e) => <EventRow event={e} showCompany={showCompany} now={now} />)}
+      {rows.map((e, i) => (
+        <EventRow event={e} showCompany={showCompany} now={now} hidden={upcomingLimit !== undefined && i >= upcomingLimit} />
+      ))}
     </ul>
   )}
 </div>
+
+<script>
+  // EventRow가 상태를 다시 계산할 때마다 개수 제한 목록을 다시 고른다
+  function apply() {
+    document.querySelectorAll<HTMLElement>('[data-event-list][data-upcoming-limit]').forEach((list) => {
+      const limit = Number(list.dataset.upcomingLimit);
+      let shown = 0;
+      list.querySelectorAll<HTMLElement>('[data-event-row]').forEach((row) => {
+        const show = row.dataset.phase !== 'past' && shown < limit;
+        row.hidden = !show;
+        if (show) shown++;
+      });
+      list.querySelector<HTMLElement>('[data-empty]')!.hidden = shown > 0;
+      list.querySelector<HTMLElement>('.event-list')?.toggleAttribute('hidden', shown === 0);
+    });
+  }
+  document.addEventListener('jpj:events-refreshed', apply);
+  apply();
+</script>
 
 <style>
   .event-list-wrap {

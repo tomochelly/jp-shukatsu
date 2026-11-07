@@ -15,8 +15,9 @@ interface Props {
   showCompany?: boolean;
   /** 빌드 기준 시각 (테스트·미리보기용) */
   now?: Date;
+  hidden?: boolean;
 }
-const { event: e, showCompany = true, now = new Date() } = Astro.props;
+const { event: e, showCompany = true, now = new Date(), hidden = false } = Astro.props;
 const status = eventStatus(e, e.timezone, now);
 const past = status.phase === 'past';
 const range = isRange(e);
@@ -31,7 +32,13 @@ const endLabel = range
       : `${e.endTime} 마감`
     : undefined;
 ---
-<li class:list={['event-row', { 'is-past': past }]} data-event-row data-timing={JSON.stringify(timing)}>
+<li
+  class:list={['event-row', { 'is-past': past }]}
+  data-event-row
+  data-phase={status.phase}
+  data-timing={JSON.stringify(timing)}
+  hidden={hidden}
+>
   <div class="date num">
     <time datetime={e.date}>{formatMonthDay(e.date)}</time>
     <span class="dow">({weekdayKo(e.date)})</span>
