@@ -4,7 +4,6 @@
  * astro:content에 의존하지 않는 순수 모듈 (테스트용으로 분리).
  */
 import { compareEvents } from './dates.ts';
-import { eventId } from './ids.ts';
 import type { Company, CompanyEvent, IndustryFile, TimeZone } from './schema.ts';
 
 export interface Industry {
@@ -30,7 +29,6 @@ export interface CompanyEntry extends Company {
 }
 
 export interface EventEntry extends CompanyEvent {
-  id: string;
   companyName: string;
   companyNameJa: string;
   industryId: string;
@@ -88,7 +86,7 @@ export function buildCompanyData(files: ReadonlyArray<{ id: string; data: Indust
   }
 
   const events: EventEntry[] = [];
-  const eventIds = new Set<string>();
+  const eventFile = new Map<string, string>();
   for (const { id: industryId, data } of sorted) {
     data.events.forEach((ev, i) => {
       const c = byId.get(ev.company);
@@ -96,15 +94,13 @@ export function buildCompanyData(files: ReadonlyArray<{ id: string; data: Indust
         errors.push(`${industryId}.json events[${i}]: 기업 id "${ev.company}"를 찾을 수 없습니다`);
         return;
       }
-      const id = eventId(ev);
-      if (eventIds.has(id)) {
-        errors.push(`${industryId}.json events[${i}]: 같은 기업·날짜·제목의 일정이 중복됩니다 (${id})`);
+      if (eventFile.has(ev.id)) {
+        errors.push(`일정 id "${ev.id}"가 ${eventFile.get(ev.id)}.json과 ${industryId}.json에 중복됩니다`);
         return;
       }
-      eventIds.add(id);
+      eventFile.set(ev.id, industryId);
       events.push({
         ...ev,
-        id,
         companyName: c.name,
         companyNameJa: c.nameJa,
         industryId,

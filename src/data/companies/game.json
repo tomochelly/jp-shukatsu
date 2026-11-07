@@ -176,18 +176,21 @@
   ],
   "events": [
     {
+      "id": "capcom-28-entry-open",
       "company": "capcom",
       "date": "2026-11-02",
       "title": "28졸 엔트리 접수 시작",
       "kind": "엔트리"
     },
     {
+      "id": "bandai-namco-ent-28-rikunabi-web-fair",
       "company": "bandai-namco-ent",
       "date": "2026-11-21",
       "title": "리크나비 WEB 합동설명회 참가",
       "kind": "설명회"
     },
     {
+      "id": "cygames-28-regular-1",
       "company": "cygames",
       "date": "2026-12-01",
       "time": "15:00",
@@ -197,6 +200,7 @@
       "kind": "응모"
     },
     {
+      "id": "cygames-28-regular-2",
       "company": "cygames",
       "date": "2027-02-01",
       "time": "15:00",
@@ -206,6 +210,7 @@
       "kind": "응모"
     },
     {
+      "id": "sega-28-planner-1day",
       "company": "sega",
       "date": "2027-02-26",
       "endTime": "23:59",
@@ -214,6 +219,7 @@
       "sourceNote": "キャリタス就活 게재 정보"
     },
     {
+      "id": "cygames-28-regular-3",
       "company": "cygames",
       "date": "2027-03-01",
       "time": "15:00",
@@ -223,6 +229,7 @@
       "kind": "응모"
     },
     {
+      "id": "cygames-28-regular-4",
       "company": "cygames",
       "date": "2027-05-17",
       "time": "15:00",

@@ -26,6 +26,10 @@ const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'HH:mm (00:00~23:59) 
 
 const nonEmpty = z.string().trim().min(1);
 
+/** URL·저장 키에 쓰는 id: 영소문자·숫자·하이픈 */
+const slug = (what: string) =>
+  z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, `${what}는 영소문자·숫자·하이픈만 사용 (예: cygames-28-regular-1)`);
+
 /** 졸업 연도 (2자리, 예: 28 = 2028년 졸업) */
 const gradYear = z.number().int().min(20).max(99);
 
@@ -37,7 +41,7 @@ export const sourceSchema = z.object({
 
 export const companySchema = z.object({
   /** URL에 쓰이는 id. 모든 업계 파일을 통틀어 유일해야 함. 영소문자·숫자·하이픈 */
-  id: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'id는 영소문자·숫자·하이픈만 사용'),
+  id: slug('기업 id'),
   name: nonEmpty,
   nameJa: nonEmpty,
   /** 사람이 읽는 요강 상태 (예: "28졸 요강 공개", "27졸 기준 (28졸 미공개)") */
@@ -59,6 +63,12 @@ export const companySchema = z.object({
 
 export const eventSchema = z
   .object({
+    /**
+     * 일정 고유 id. "내 캘린더" 저장 키와 .ics UID에 쓴다.
+     * 모든 업계 파일을 통틀어 유일해야 하고, 한 번 정하면 바꾸지 않는다.
+     * (날짜가 연장되거나 제목이 바뀌어도 id가 같으면 저장해둔 일정과 연결이 유지됨)
+     */
+    id: slug('일정 id'),
     /** companies[].id 참조 (다른 업계 파일의 기업도 가능) */
     company: nonEmpty,
     date: isoDate,
@@ -107,6 +117,13 @@ export const industryFileSchema = z
         ctx.addIssue({ code: 'custom', path: ['companies', i, 'id'], message: `기업 id "${c.id}"가 중복됩니다` });
       }
       seen.add(c.id);
+    });
+    const seenEvents = new Set<string>();
+    file.events.forEach((ev, i) => {
+      if (seenEvents.has(ev.id)) {
+        ctx.addIssue({ code: 'custom', path: ['events', i, 'id'], message: `일정 id "${ev.id}"가 중복됩니다` });
+      }
+      seenEvents.add(ev.id);
     });
   });
 

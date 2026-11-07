@@ -20,7 +20,11 @@ export const STAGE_TYPES = [
 ] as const;
 export type StageType = (typeof STAGE_TYPES)[number];
 
-/** 공개 일정을 내 캘린더에 담은 것 (기업 데이터가 바뀌어도 보이도록 사본 저장) */
+/**
+ * 공개 일정을 내 캘린더에 담은 것. 키는 일정 id(events[].id).
+ * 날짜·제목은 담을 때의 사본이고, 화면에서는 같은 id의 최신 공개 데이터가 있으면 그쪽을 우선한다
+ * (마감 연장 등이 반영되도록). 공개 데이터에서 사라진 일정만 사본으로 보여준다.
+ */
 export interface SavedEvent extends EventTiming {
   id: string;
   company: string;

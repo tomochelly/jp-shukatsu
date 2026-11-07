@@ -23,8 +23,9 @@ const sega = data.byId.get('sega')!;
 
 // 상태별 모양을 보기 위한 예시 일정 (오늘 = 빌드 시점 일본 날짜)
 const today = todayIn();
+let n = 0;
 const sample = (o: Partial<EventEntry> & { date: string; title: string }): EventEntry => ({
-  id: `sample-${o.date}-${o.title}`,
+  id: `styleguide-sample-${++n}`,
   company: 'cygames',
   companyName: '예시 기업',
   companyNameJa: '例',
