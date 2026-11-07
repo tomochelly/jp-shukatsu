@@ -190,35 +190,44 @@
     {
       "company": "cygames",
       "date": "2026-12-01",
+      "time": "15:00",
       "end": "2026-12-18",
-      "title": "통상선발 1회차 응모 (15:00~15:00)",
+      "endTime": "15:00",
+      "title": "통상선발 1회차 응모",
       "kind": "응모"
     },
     {
       "company": "cygames",
       "date": "2027-02-01",
+      "time": "15:00",
       "end": "2027-02-12",
+      "endTime": "15:00",
       "title": "통상선발 2회차 응모",
       "kind": "응모"
     },
     {
       "company": "sega",
       "date": "2027-02-26",
-      "title": "플래너 1day 응모 마감 (23:59)",
+      "endTime": "23:59",
+      "title": "플래너 1day 응모 마감",
       "kind": "인턴",
       "sourceNote": "キャリタス就活 게재 정보"
     },
     {
       "company": "cygames",
       "date": "2027-03-01",
+      "time": "15:00",
       "end": "2027-03-12",
+      "endTime": "15:00",
       "title": "통상선발 3회차 응모",
       "kind": "응모"
     },
     {
       "company": "cygames",
       "date": "2027-05-17",
+      "time": "15:00",
       "end": "2027-05-28",
+      "endTime": "15:00",
       "title": "통상선발 4회차 응모",
       "kind": "응모"
     }
