@@ -1,0 +1,189 @@
+---
+/**
+ * 일정 한 줄: 날짜(고정폭) / 기업 / 내용 / 구분·상태 칩.
+ * 상태(D-day, 마감 임박, 지남)는 빌드 때 한 번 계산하고, 브라우저에서 보는 시점의
+ * 일본 시간으로 다시 계산한다 (정적 사이트라 빌드 시점 값이 낡을 수 있어서).
+ * 반드시 EventList 안에서 쓴다.
+ */
+import type { EventEntry } from '~/lib/companies';
+import { eventStatus, formatMonthDay, isRange, weekdayKo } from '~/lib/dates';
+import StatusChip from './StatusChip.astro';
+import AddToCalendarButton from './AddToCalendarButton.astro';
+
+interface Props {
+  event: EventEntry;
+  showCompany?: boolean;
+  /** 빌드 기준 시각 (테스트·미리보기용) */
+  now?: Date;
+}
+const { event: e, showCompany = true, now = new Date() } = Astro.props;
+const status = eventStatus(e, e.timezone, now);
+const past = status.phase === 'past';
+const range = isRange(e);
+const timing = { date: e.date, time: e.time, end: e.end, endTime: e.endTime, tz: e.timezone };
+
+const startTime = e.time;
+const endLabel = range
+  ? `~ ${formatMonthDay(e.end!)} (${weekdayKo(e.end!)})${e.endTime ? ` ${e.endTime}` : ''}`
+  : e.endTime
+    ? e.time
+      ? `~ ${e.endTime}`
+      : `${e.endTime} 마감`
+    : undefined;
+---
+<li class:list={['event-row', { 'is-past': past }]} data-event-row data-timing={JSON.stringify(timing)}>
+  <div class="date num">
+    <time datetime={e.date}>{formatMonthDay(e.date)}</time>
+    <span class="dow">({weekdayKo(e.date)})</span>
+    {startTime && <span class="time">{startTime}</span>}
+    {endLabel && <span class="range">{endLabel}</span>}
+  </div>
+  <div class="body">
+    {showCompany && (
+      <a class="company" href={`/companies/${e.company}/`}>{e.companyName}</a>
+    )}
+    <div class="title">{e.title}</div>
+    <div class="meta">
+      <StatusChip tone="plain" outline label={e.kind} />
+      <StatusChip tone={status.tone} label={status.label} class="live-chip" />
+      {e.sourceNote && <span class="note">{e.sourceNote}</span>}
+      <span class="add" data-add-slot hidden={past}><AddToCalendarButton event={e} /></span>
+    </div>
+  </div>
+</li>
+
+<script>
+  import { eventStatus, type EventTiming } from '../lib/dates.ts';
+
+  const TONES = /\bchip--(ok|warn|danger|past|plain)\b/;
+
+  function refresh() {
+    document.querySelectorAll<HTMLElement>('[data-event-row]').forEach((row) => {
+      const t = JSON.parse(row.dataset.timing!) as EventTiming & { tz: string };
+      const s = eventStatus(t, t.tz);
+      const chip = row.querySelector<HTMLElement>('.live-chip');
+      if (chip) {
+        chip.className = chip.className.replace(TONES, `chip--${s.tone}`);
+        chip.textContent = s.label;
+      }
+      row.classList.toggle('is-past', s.phase === 'past');
+      row.dataset.phase = s.phase;
+      row.dataset.imminent = String(s.imminent);
+      const add = row.querySelector<HTMLElement>('[data-add-slot]');
+      if (add) add.hidden = s.phase === 'past';
+    });
+    document.dispatchEvent(new CustomEvent('jpj:events-refreshed'));
+  }
+
+  refresh();
+  // 페이지를 열어둔 채로 자정·마감 시각이 지나도 맞게
+  setInterval(refresh, 60_000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refresh();
+  });
+</script>
+
+<style>
+  .event-row {
+    display: grid;
+    grid-template-columns: 4.75rem minmax(0, 1fr);
+    gap: var(--sp-1) var(--sp-3);
+    align-items: start;
+    padding: var(--sp-3) 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .date {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    line-height: 1.4;
+  }
+  .dow {
+    color: var(--text-faint);
+    font-weight: var(--fw-medium);
+  }
+  .time,
+  .range {
+    display: block;
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-medium);
+    color: var(--text-muted);
+  }
+  .range {
+    color: var(--text-faint);
+  }
+  .company {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .company:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .title {
+    margin-top: 1px;
+    line-height: 1.45;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-1) var(--sp-2);
+    margin-top: var(--sp-1);
+  }
+  .note {
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+  }
+  .add {
+    margin-left: auto;
+  }
+
+  .is-past .date,
+  .is-past .company,
+  .is-past .title,
+  .is-past .time {
+    color: var(--text-faint);
+  }
+  .is-past .title {
+    text-decoration: line-through;
+    text-decoration-color: var(--border-strong);
+  }
+
+  /* 넓은 목록에서는 한 줄 표 형태 (EventList가 container) */
+  @container event-list (min-width: 640px) {
+    .event-row {
+      grid-template-columns: 7.5rem minmax(0, 1fr);
+      align-items: center;
+    }
+    .body {
+      display: grid;
+      grid-template-columns: 8.5rem minmax(0, 1fr) auto;
+      gap: var(--sp-3);
+      align-items: center;
+    }
+    .company {
+      font-size: var(--fs-sm);
+    }
+    .title {
+      margin: 0;
+    }
+    .meta {
+      margin: 0;
+      justify-content: flex-end;
+    }
+    .add {
+      margin-left: var(--sp-2);
+    }
+    .note {
+      flex-basis: 100%;
+      text-align: right;
+      order: 9;
+    }
+    /* 기업 열이 없는 목록 (기업 상세의 관련 일정) */
+    .body:not(:has(.company)) {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+  }
+</style>

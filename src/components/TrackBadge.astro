@@ -1,0 +1,26 @@
+---
+import { trackById, type TrackId } from '~/lib/tracks';
+
+interface Props {
+  track: TrackId;
+}
+const t = trackById(Astro.props.track);
+---
+<span class="track-badge" data-track={t.id}>{t.label}</span>
+
+<style>
+  .track-badge {
+    display: inline-block;
+    white-space: nowrap;
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    line-height: 1;
+    padding: 5px 6px;
+    border-radius: var(--radius-sm);
+    color: var(--t);
+    background: var(--t-soft);
+  }
+  [data-track='new'] { --t: var(--track-new); --t-soft: var(--track-new-soft); }
+  [data-track='direct'] { --t: var(--track-direct); --t-soft: var(--track-direct-soft); }
+  [data-track='career'] { --t: var(--track-career); --t-soft: var(--track-career-soft); }
+</style>

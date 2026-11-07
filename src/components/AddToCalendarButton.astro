@@ -1,0 +1,81 @@
+---
+/**
+ * 공개 일정을 "내 캘린더"(localStorage)에 담기/빼기.
+ * 지난 일정에는 렌더링하지 않는다 (EventRow가 처리).
+ */
+import type { EventEntry } from '~/lib/companies';
+import type { SavedEvent } from '~/lib/tracker';
+
+interface Props {
+  event: EventEntry;
+}
+const { event: e } = Astro.props;
+const payload: Omit<SavedEvent, 'addedAt'> = {
+  id: e.id,
+  company: e.company,
+  companyName: e.companyName,
+  title: e.title,
+  kind: e.kind,
+  date: e.date,
+  time: e.time,
+  end: e.end,
+  endTime: e.endTime,
+  timezone: e.timezone,
+};
+---
+<button class="add-cal" type="button" data-add-event={JSON.stringify(payload)} aria-pressed="false">
+  <span class="label">+ 내 캘린더</span>
+  <span class="sr-only">: {e.companyName} {e.title}</span>
+</button>
+
+<script>
+  import { hasEvent, subscribe, toggleEvent, type SavedEvent } from '../lib/tracker.ts';
+
+  const buttons = () => document.querySelectorAll<HTMLButtonElement>('[data-add-event]');
+
+  function render(btn: HTMLButtonElement, saved: boolean) {
+    btn.setAttribute('aria-pressed', String(saved));
+    btn.querySelector('.label')!.textContent = saved ? '내 캘린더에 있음' : '+ 내 캘린더';
+  }
+
+  function sync() {
+    buttons().forEach((btn) => {
+      const ev = JSON.parse(btn.dataset.addEvent!) as SavedEvent;
+      render(btn, hasEvent(ev.id));
+    });
+  }
+
+  buttons().forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const ev = JSON.parse(btn.dataset.addEvent!) as Omit<SavedEvent, 'addedAt'>;
+      const { saved, ok } = toggleEvent(ev);
+      if (!ok) {
+        btn.querySelector('.label')!.textContent = '저장할 수 없어요';
+        return;
+      }
+      render(btn, saved);
+    });
+  });
+  sync();
+  subscribe(sync);
+</script>
+
+<style>
+  .add-cal {
+    flex: none;
+    padding: var(--sp-1) 0;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .add-cal:hover .label {
+    text-decoration: underline;
+  }
+  .add-cal[aria-pressed='true'] {
+    color: var(--ok);
+  }
+</style>

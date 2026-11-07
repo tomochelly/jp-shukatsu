@@ -1,0 +1,83 @@
+---
+/** 전형 흐름: "→"로 이어진 문장은 번호 단계로, 나머지는 문단으로 */
+import { parseFlow } from '~/lib/flow';
+
+interface Props {
+  flow: string;
+}
+const blocks = parseFlow(Astro.props.flow);
+---
+<div class="flow">
+  {blocks.map((b) =>
+    b.kind === 'text' ? (
+      <p class="text">{b.text}</p>
+    ) : (
+      <div class="group">
+        {b.label && <div class="label">{b.label}</div>}
+        <ol class="steps">
+          {b.steps.map((s) => <li>{s}</li>)}
+        </ol>
+      </div>
+    ),
+  )}
+</div>
+
+<style>
+  .flow > * + * {
+    margin-top: var(--sp-4);
+  }
+  .label {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-bold);
+    color: var(--text-muted);
+    margin-bottom: var(--sp-2);
+  }
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: step;
+  }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding: 0 0 var(--sp-3) 2rem;
+    line-height: var(--lh-snug);
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1.375rem;
+    height: 1.375rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-bold);
+    font-variant-numeric: tabular-nums;
+  }
+  .steps li::after {
+    content: '';
+    position: absolute;
+    left: calc(0.6875rem - 0.5px);
+    top: 1.5rem;
+    bottom: 2px;
+    width: 1px;
+    background: var(--border);
+  }
+  .steps li:last-child {
+    padding-bottom: 0;
+  }
+  .steps li:last-child::after {
+    display: none;
+  }
+  .steps li:last-child::before {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+</style>

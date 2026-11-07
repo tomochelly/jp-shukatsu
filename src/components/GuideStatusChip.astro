@@ -1,0 +1,12 @@
+---
+/** 요강 상태 칩: 대상 연도 요강이면 "28졸 요강 공개", 아니면 "27졸 기준" */
+import StatusChip from './StatusChip.astro';
+
+interface Props {
+  guideYear: number;
+  targetYear: number;
+}
+const { guideYear, targetYear } = Astro.props;
+const current = guideYear >= targetYear;
+---
+<StatusChip tone={current ? 'ok' : 'warn'} label={current ? `${targetYear}졸 요강 공개` : `${guideYear}졸 기준`} />

@@ -1,0 +1,53 @@
+---
+/**
+ * 기업을 "내 전형 관리"에 추가. 추가된 뒤에는 관리 화면으로 가는 링크로 바뀐다.
+ * (실수로 눌러서 단계 기록이 지워지지 않게 여기서는 빼기 기능 없음)
+ */
+interface Props {
+  companyId: string;
+  companyName: string;
+}
+const { companyId, companyName } = Astro.props;
+---
+<span class="track-co" data-track-company={companyId} data-name={companyName}>
+  <button class="btn btn--primary" type="button" data-add>내 전형에 추가</button>
+  <a class="btn" href="/calendar/#my" data-added hidden>
+    <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m2.5 7.5 3 3 6-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    내 전형에 있음 · 보기
+  </a>
+</span>
+
+<script>
+  import { addApplication, hasApplication, subscribe } from '../lib/tracker.ts';
+
+  const roots = () => document.querySelectorAll<HTMLElement>('[data-track-company]');
+
+  function sync() {
+    roots().forEach((root) => {
+      const added = hasApplication(root.dataset.trackCompany!);
+      root.querySelector<HTMLElement>('[data-add]')!.hidden = added;
+      root.querySelector<HTMLElement>('[data-added]')!.hidden = !added;
+    });
+  }
+
+  roots().forEach((root) => {
+    const btn = root.querySelector<HTMLButtonElement>('[data-add]')!;
+    btn.addEventListener('click', () => {
+      const { ok } = addApplication(root.dataset.trackCompany!, root.dataset.name!);
+      if (!ok) {
+        btn.textContent = '저장할 수 없어요 (브라우저 저장소 꺼짐)';
+        return;
+      }
+      sync();
+      root.querySelector<HTMLElement>('[data-added]')!.focus();
+    });
+  });
+  sync();
+  subscribe(sync);
+</script>
+
+<style>
+  .track-co {
+    display: contents;
+  }
+</style>

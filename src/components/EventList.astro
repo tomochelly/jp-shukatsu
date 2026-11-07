@@ -1,0 +1,39 @@
+---
+import type { EventEntry } from '~/lib/companies';
+import EventRow from './EventRow.astro';
+
+interface Props {
+  events: readonly EventEntry[];
+  showCompany?: boolean;
+  emptyText?: string;
+  now?: Date;
+}
+const { events, showCompany = true, emptyText = '표시할 일정이 없어요.', now } = Astro.props;
+---
+<div class="event-list-wrap">
+  {events.length === 0 ? (
+    <p class="empty">{emptyText}</p>
+  ) : (
+    <ul class="event-list">
+      {events.map((e) => <EventRow event={e} showCompany={showCompany} now={now} />)}
+    </ul>
+  )}
+</div>
+
+<style>
+  .event-list-wrap {
+    container: event-list / inline-size;
+  }
+  .event-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--border);
+  }
+  .empty {
+    padding: var(--sp-4) 0;
+    color: var(--text-muted);
+    font-size: var(--fs-sm);
+    border-top: 1px solid var(--border);
+  }
+</style>

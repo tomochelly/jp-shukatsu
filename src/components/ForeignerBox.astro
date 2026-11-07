@@ -1,0 +1,105 @@
+---
+/**
+ * 외국인 지원자 체크: 국적·비자, 일본어 요건을 눈에 띄게.
+ * 값이 "기재 없음"이면 빈칸이 아니라 "공식 요강에 기재 없음"으로 흐리게 표시.
+ */
+interface Props {
+  foreigner: string;
+  japanese: string;
+  id?: string;
+}
+const { foreigner, japanese, id = 'foreigner' } = Astro.props;
+
+const isMissing = (v: string) => v.trim() === '' || v.trim() === '기재 없음';
+const rows = [
+  { label: '국적·비자', value: foreigner },
+  { label: '일본어', value: japanese },
+];
+---
+<section class="foreigner-box" id={id} aria-labelledby={`${id}-title`}>
+  <header>
+    <h2 id={`${id}-title`}>외국인 지원자 체크</h2>
+    <span>국적 · 비자 · 일본어</span>
+  </header>
+  <dl>
+    {rows.map((r) => (
+      <div class:list={['row', { 'is-missing': isMissing(r.value) }]}>
+        <dt>{r.label}</dt>
+        <dd>
+          {isMissing(r.value) ? (
+            <>
+              공식 요강에 기재 없음
+              <small>설명회나 인사 담당자에게 직접 확인해보세요.</small>
+            </>
+          ) : (
+            r.value
+          )}
+        </dd>
+      </div>
+    ))}
+  </dl>
+</section>
+
+<style>
+  .foreigner-box {
+    container-type: inline-size;
+    margin-top: var(--sp-5);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-4);
+    background: var(--accent-soft);
+  }
+  h2 {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-bold);
+    color: var(--accent);
+  }
+  header span {
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+  }
+  .row {
+    padding: var(--sp-3) var(--sp-4);
+    border-top: 1px solid var(--border);
+  }
+  .row:first-child {
+    border-top: 0;
+  }
+  dt {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-bold);
+    color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+  dd {
+    margin: 0;
+    line-height: var(--lh-body);
+  }
+  .is-missing dd {
+    color: var(--text-faint);
+  }
+  small {
+    display: block;
+    font-size: var(--fs-xs);
+    margin-top: 2px;
+  }
+  @container (min-width: 520px) {
+    .row {
+      display: grid;
+      grid-template-columns: 7rem 1fr;
+      gap: var(--sp-4);
+    }
+    dt {
+      margin: 0;
+      padding-top: 2px;
+    }
+  }
+</style>

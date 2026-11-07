@@ -1,0 +1,71 @@
+---
+/**
+ * 출처·확인일. 기업 정보와 가이드 글 하단에 항상 같은 모양으로.
+ */
+import { formatFullDate } from '~/lib/dates';
+import type { Source } from '~/lib/schema';
+
+interface Props {
+  sources: readonly Source[];
+  checkedAt: string;
+  /** 가이드 글은 "최종 확인일" */
+  checkedLabel?: string;
+  id?: string;
+}
+const { sources, checkedAt, checkedLabel = '확인일', id } = Astro.props;
+---
+<p class="source-line" id={id}>
+  {sources.length > 0 && (
+    <span class="group">
+      <span class="lbl">출처</span>
+      {sources.map((s, i) => (
+        <>
+          {i > 0 && <span class="sep" aria-hidden="true">·</span>}
+          <a href={s.url} target="_blank" rel="noopener noreferrer" lang="ja">{s.label}<span class="sr-only"> (새 창)</span></a>
+        </>
+      ))}
+    </span>
+  )}
+  <span class="group">
+    <span class="lbl">{checkedLabel}</span>
+    <time class="num" datetime={checkedAt}>{formatFullDate(checkedAt)}</time>
+    <span class="tz">일본 시간</span>
+  </span>
+</p>
+
+<style>
+  .source-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-1) var(--sp-4);
+    margin-top: var(--sp-8);
+    padding-top: var(--sp-3);
+    border-top: 1px dashed var(--border-strong);
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+    line-height: var(--lh-snug);
+  }
+  .group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--sp-1);
+  }
+  .lbl,
+  .tz {
+    color: var(--text-faint);
+  }
+  .lbl {
+    margin-right: 2px;
+  }
+  a {
+    color: var(--text-muted);
+    text-underline-offset: 2px;
+  }
+  a:hover {
+    color: var(--accent);
+  }
+  .sep {
+    color: var(--border-strong);
+  }
+</style>

@@ -1,0 +1,57 @@
+---
+/**
+ * 상태 칩. tone으로 색을 정하고 문구는 label.
+ * ok=공개됨/진행 중, warn=주의(이전 연도 기준), danger=마감 임박, past=지남, plain=중립
+ */
+export type ChipTone = 'ok' | 'warn' | 'danger' | 'past' | 'plain';
+
+interface Props {
+  tone: ChipTone;
+  label: string;
+  /** 점 표시 없이 테두리만 (구분 칩 등) */
+  outline?: boolean;
+  class?: string;
+}
+
+const { tone, label, outline = false, class: extra } = Astro.props;
+---
+<span class:list={['chip', `chip--${tone}`, { 'chip--outline': outline }, extra]} data-status-chip>{label}</span>
+
+<style>
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-1);
+    white-space: nowrap;
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    line-height: 1;
+    padding: 5px 7px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    font-variant-numeric: tabular-nums;
+  }
+  .chip::before {
+    content: '';
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .chip--ok { color: var(--ok); background: var(--ok-soft); }
+  .chip--warn { color: var(--warn); background: var(--warn-soft); }
+  .chip--danger { color: var(--danger); background: var(--danger-soft); }
+  .chip--past { color: var(--past); background: var(--past-soft); }
+  .chip--plain { color: var(--text-muted); background: transparent; border-color: var(--border); }
+  .chip--outline {
+    color: var(--text-muted);
+    background: transparent;
+    border-color: var(--border);
+    font-weight: var(--fw-medium);
+  }
+  .chip--plain::before,
+  .chip--outline::before {
+    display: none;
+  }
+</style>
