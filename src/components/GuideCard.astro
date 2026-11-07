@@ -1,0 +1,71 @@
+---
+/** 가이드 목록 한 줄: 제목 / 원문 / 설명 / 트랙·상태 */
+import TrackBadge from './TrackBadge.astro';
+import StatusChip from './StatusChip.astro';
+import { formatFullDate } from '~/lib/dates';
+import { guideHref, type GuideEntry } from '~/lib/guides';
+
+interface Props {
+  guide: GuideEntry;
+  compact?: boolean;
+}
+const { guide: g, compact = false } = Astro.props;
+const d = g.data;
+---
+<li class:list={['guide', { compact }]}>
+  <a href={guideHref(g)} class="title">{d.title}</a>
+  {d.titleJa && <span class="ja" lang="ja">{d.titleJa}</span>}
+  {!compact && <p class="desc">{d.description}</p>}
+  <div class="meta">
+    {d.tracks.map((t) => <TrackBadge track={t} />)}
+    {d.status === 'draft' ? (
+      <StatusChip tone="plain" outline label="작성 중" />
+    ) : (
+      d.lastChecked && <span class="checked num">최종 확인 {formatFullDate(d.lastChecked)}</span>
+    )}
+  </div>
+</li>
+
+<style>
+  .guide {
+    padding: var(--sp-4) 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .compact {
+    padding: var(--sp-3) 0;
+  }
+  .title {
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+    text-decoration: none;
+  }
+  .compact .title {
+    font-size: var(--fs-base);
+  }
+  .title:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .ja {
+    display: block;
+    margin-top: 2px;
+    font-size: var(--fs-xs);
+  }
+  .desc {
+    margin-top: var(--sp-1);
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-1) var(--sp-2);
+    align-items: center;
+    margin-top: var(--sp-2);
+  }
+  .checked {
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+  }
+</style>

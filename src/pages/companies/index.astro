@@ -1,0 +1,128 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import CompanyRow from '~/components/CompanyRow.astro';
+import { getCompanyData } from '~/lib/companies';
+import { formatFullDate } from '~/lib/dates';
+
+const data = await getCompanyData();
+const groups = data.industries.map((ind) => ({
+  ...ind,
+  companies: data.companies.filter((c) => c.industryId === ind.id),
+}));
+---
+<BaseLayout title="기업" description="외국인 관점으로 정리한 일본 기업 신졸 채용 정보. 업계별 목록.">
+  <h1>기업</h1>
+  <p class="lead">
+    공식 채용 요강을 보고 외국인 관점(국적·비자·일본어)으로 정리했어요. 업계별로 확인일이 달라요.
+  </p>
+
+  <nav class="filter" aria-label="업계 필터" data-industry-filter>
+    <a href="/companies/" data-industry="" aria-current="page">전체 <span class="num">{data.companies.length}</span></a>
+    {groups.map((g) => (
+      <a href={`/companies/?industry=${g.id}`} data-industry={g.id}>
+        {g.name} <span class="num">{g.companies.length}</span>
+      </a>
+    ))}
+  </nav>
+
+  {groups.map((g) => (
+    <section class="group" data-industry-group={g.id} aria-labelledby={`ind-${g.id}`}>
+      <div class="group-head">
+        <h2 id={`ind-${g.id}`}>{g.name}</h2>
+        <p class="group-meta">
+          {g.targetYearLabel} 기준 · 확인일 <time class="num" datetime={g.checkedAt}>{formatFullDate(g.checkedAt)}</time>
+        </p>
+      </div>
+      <ul class="list">{g.companies.map((c) => <CompanyRow company={c} />)}</ul>
+    </section>
+  ))}
+</BaseLayout>
+
+<script>
+  // ?industry=<id> 로 업계 하나만 보기. 없는 id면 전체.
+  const nav = document.querySelector<HTMLElement>('[data-industry-filter]');
+  const groups = document.querySelectorAll<HTMLElement>('[data-industry-group]');
+
+  function apply() {
+    const wanted = new URLSearchParams(location.search).get('industry') ?? '';
+    const exists = [...groups].some((g) => g.dataset.industryGroup === wanted);
+    const current = exists ? wanted : '';
+    groups.forEach((g) => (g.hidden = current !== '' && g.dataset.industryGroup !== current));
+    nav?.querySelectorAll<HTMLAnchorElement>('[data-industry]').forEach((a) => {
+      if (a.dataset.industry === current) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+  }
+
+  nav?.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-industry]');
+    if (!a) return;
+    e.preventDefault();
+    history.pushState(null, '', a.href);
+    apply();
+  });
+  window.addEventListener('popstate', apply);
+  apply();
+</script>
+
+<style>
+  h1 {
+    font-size: var(--fs-xl);
+  }
+  .lead {
+    max-width: var(--measure);
+    margin: var(--sp-2) 0 var(--sp-5);
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+  .filter a {
+    padding: 6px var(--sp-3);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    font-size: var(--fs-sm);
+    text-decoration: none;
+    color: var(--text-muted);
+  }
+  .filter a span {
+    margin-left: 2px;
+    color: var(--text-faint);
+  }
+  .filter a[aria-current='page'] {
+    border-color: var(--text);
+    background: var(--text);
+    color: var(--bg);
+  }
+  .filter a[aria-current='page'] span {
+    color: inherit;
+    opacity: 0.7;
+  }
+  .group {
+    max-width: 720px;
+    margin-top: var(--sp-8);
+  }
+  .group-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--sp-1) var(--sp-3);
+    padding-bottom: var(--sp-2);
+    border-bottom: 2px solid var(--text);
+  }
+  h2 {
+    font-size: var(--fs-md);
+  }
+  .group-meta {
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+  }
+  .list {
+    list-style: none;
+    padding: 0;
+  }
+</style>
