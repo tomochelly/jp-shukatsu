@@ -1,0 +1,316 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import GuideStatusChip from '~/components/GuideStatusChip.astro';
+import StatusChip from '~/components/StatusChip.astro';
+import TrackBadge from '~/components/TrackBadge.astro';
+import Notice from '~/components/Notice.astro';
+import ForeignerBox from '~/components/ForeignerBox.astro';
+import FlowSteps from '~/components/FlowSteps.astro';
+import EventList from '~/components/EventList.astro';
+import SourceLine from '~/components/SourceLine.astro';
+import TrackCompanyButton from '~/components/TrackCompanyButton.astro';
+import { getCompanyData, type CompanyEntry } from '~/lib/companies';
+
+export async function getStaticPaths() {
+  const { companies } = await getCompanyData();
+  return companies.map((company) => ({ params: { id: company.id }, props: { company } }));
+}
+
+interface Props {
+  company: CompanyEntry;
+}
+const { company: c } = Astro.props;
+const data = await getCompanyData();
+const events = data.events.filter((e) => e.company === c.id);
+const siblings = data.companies.filter((x) => x.industryId === c.industryId && x.id !== c.id);
+const officialUrl = c.sources[0]!.url;
+
+const toc = [
+  { href: '#summary', label: '요약' },
+  { href: '#foreigner', label: '외국인 지원자 체크' },
+  { href: '#flow', label: '전형 흐름' },
+  { href: '#terms', label: '초임 · 근무지 · 직종' },
+  ...(c.notes.length ? [{ href: '#notes', label: '정리하면서 메모' }] : []),
+  ...(events.length ? [{ href: '#events', label: '관련 일정' }] : []),
+  { href: '#sources', label: '출처' },
+];
+const description = `${c.name}(${c.nameJa}) ${c.targetYearLabel} 신졸 채용 정리: 외국인·일본어 요건, 전형 흐름, 초임, 일정. 확인일 ${c.checkedAt}.`;
+---
+<BaseLayout title={`${c.name} ${c.nameJa}`} description={description}>
+  <nav class="crumbs" aria-label="현재 위치">
+    <a href="/companies/">기업</a>
+    <span aria-hidden="true">›</span>
+    <a href={`/companies/?industry=${c.industryId}`}>{c.industry}</a>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">{c.name}</span>
+  </nav>
+
+  <div class="layout">
+    <article class="main">
+      <header class="head" id="summary">
+        <h1>
+          {c.name}
+          <span class="ja" lang="ja">{c.nameJa}</span>
+        </h1>
+        <div class="chips">
+          <GuideStatusChip guideYear={c.guideYear} targetYear={c.targetYear} />
+          <StatusChip tone="plain" outline label={c.industry} />
+          <TrackBadge track="new" />
+        </div>
+        {c.isGuideOutdated && (
+          <Notice title={`${c.targetYear}졸 요강이 아직 안 나왔어요.`}>
+            아래는 {c.guideYear}졸 요강 기준이라 일정·초임·전형이 바뀔 수 있어요.
+          </Notice>
+        )}
+        <div class="actions">
+          <TrackCompanyButton companyId={c.id} companyName={c.name} />
+          <a class="btn" href={officialUrl} target="_blank" rel="noopener noreferrer">
+            공식 요강
+            <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5 3h6v6M11 3 4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
+            <span class="sr-only">(새 창)</span>
+          </a>
+        </div>
+      </header>
+
+      <ForeignerBox id="foreigner" foreigner={c.foreigner} japanese={c.japanese} />
+
+      <section class="block" id="flow" aria-labelledby="flow-title">
+        <h2 id="flow-title">전형 흐름 <span class="ja" lang="ja">選考フロー</span></h2>
+        <FlowSteps flow={c.flow} />
+      </section>
+
+      <section class="block" id="terms" aria-labelledby="terms-title">
+        <h2 id="terms-title">초임 · 근무지 · 직종</h2>
+        <dl class="facts">
+          <div>
+            <dt>초임 <span class="ja" lang="ja">初任給</span></dt>
+            <dd>{c.pay}</dd>
+          </div>
+          <div>
+            <dt>근무지 <span class="ja" lang="ja">勤務地</span></dt>
+            <dd>{c.locations}</dd>
+          </div>
+          <div>
+            <dt>모집 직종 <span class="ja" lang="ja">職種</span></dt>
+            <dd>
+              <ul class="roles">{c.roles.map((r) => <li>{r}</li>)}</ul>
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      {c.notes.length > 0 && (
+        <section class="block" id="notes" aria-labelledby="notes-title">
+          <h2 id="notes-title">정리하면서 메모</h2>
+          <ul class="memo">{c.notes.map((n) => <li>{n}</li>)}</ul>
+        </section>
+      )}
+
+      {events.length > 0 && (
+        <section class="block" id="events" aria-labelledby="events-title">
+          <h2 id="events-title">관련 일정</h2>
+          <EventList events={events} showCompany={false} />
+        </section>
+      )}
+
+      <SourceLine id="sources" sources={c.sources} checkedAt={c.checkedAt} />
+    </article>
+
+    <aside class="aside" aria-label="보조 정보">
+      <nav class="panel" aria-labelledby="toc-title">
+        <h2 id="toc-title">이 페이지</h2>
+        <ul class="links">{toc.map((t) => <li><a href={t.href}>{t.label}</a></li>)}</ul>
+      </nav>
+      {siblings.length > 0 && (
+        <nav class="panel" aria-labelledby="siblings-title">
+          <h2 id="siblings-title">같은 업계 · {c.industry}</h2>
+          <ul class="links">
+            {siblings.map((s) => (
+              <li>
+                <a href={`/companies/${s.id}/`}>{s.name}</a>
+                {s.isGuideOutdated && <span class="old num">{s.guideYear}졸 기준</span>}
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+    </aside>
+  </div>
+</BaseLayout>
+
+<style>
+  .crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-1);
+    margin-bottom: var(--sp-3);
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+  }
+  .crumbs a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .crumbs a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .layout {
+    display: grid;
+    gap: var(--sp-10);
+  }
+  .main {
+    min-width: 0;
+    max-width: 720px;
+  }
+  .aside {
+    display: none;
+  }
+  @media (min-width: 960px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr) 260px;
+      align-items: start;
+    }
+    .aside {
+      display: block;
+      position: sticky;
+      top: var(--sp-6);
+    }
+  }
+
+  h1 {
+    font-size: var(--fs-xl);
+    letter-spacing: -0.02em;
+  }
+  h1 .ja {
+    display: block;
+    margin-top: 2px;
+    font-size: var(--fs-sm);
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-top: var(--sp-3);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-top: var(--sp-4);
+  }
+
+  .block {
+    margin-top: var(--sp-8);
+    scroll-margin-top: var(--sp-4);
+  }
+  .block > h2 {
+    margin-bottom: var(--sp-3);
+    padding-bottom: var(--sp-2);
+    border-bottom: 1px solid var(--border);
+    font-size: var(--fs-md);
+  }
+  /* 일정 목록은 자체 윗선이 있어서 제목 밑줄 생략 */
+  #events > h2 {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .facts > div {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: var(--sp-3);
+    padding: var(--sp-3) 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .facts > div:first-child {
+    padding-top: 0;
+  }
+  .facts dt {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    color: var(--text-muted);
+  }
+  .facts dt .ja {
+    display: block;
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-regular);
+    color: var(--text-faint);
+  }
+  .facts dd {
+    margin: 0;
+  }
+  .roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-1) var(--sp-2);
+    list-style: none;
+    padding: 0;
+  }
+  .roles li {
+    padding: 2px var(--sp-2);
+    border-radius: var(--radius-sm);
+    background: var(--surface-sunken);
+    font-size: var(--fs-sm);
+  }
+
+  .memo {
+    list-style: none;
+    padding: 0;
+  }
+  .memo li {
+    position: relative;
+    padding-left: var(--sp-4);
+  }
+  .memo li + li {
+    margin-top: var(--sp-2);
+  }
+  .memo li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 0.72em;
+    width: 5px;
+    height: 5px;
+    border-radius: 1px;
+    background: var(--text-faint);
+  }
+
+  .panel {
+    padding-top: var(--sp-3);
+    border-top: 2px solid var(--text);
+  }
+  .panel + .panel {
+    margin-top: var(--sp-6);
+  }
+  .panel h2 {
+    margin-bottom: var(--sp-2);
+    font-size: var(--fs-sm);
+  }
+  .links {
+    list-style: none;
+    padding: 0;
+    font-size: var(--fs-sm);
+  }
+  .links li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--sp-2);
+    align-items: baseline;
+  }
+  .links a {
+    display: block;
+    padding: 3px 0;
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .links a:hover {
+    color: var(--accent);
+  }
+  .old {
+    font-size: var(--fs-xs);
+    color: var(--warn);
+    white-space: nowrap;
+  }
+</style>
