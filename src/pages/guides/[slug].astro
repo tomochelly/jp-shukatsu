@@ -1,0 +1,218 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import TrackBadge from '~/components/TrackBadge.astro';
+import StatusChip from '~/components/StatusChip.astro';
+import Notice from '~/components/Notice.astro';
+import SourceLine from '~/components/SourceLine.astro';
+import { getGuides, guideHref, type GuideEntry } from '~/lib/guides';
+import '~/styles/prose.css';
+
+export async function getStaticPaths() {
+  const guides = await getGuides();
+  return guides.map((guide, i) => ({
+    params: { slug: guide.id },
+    props: { guide, prev: guides[i - 1], next: guides[i + 1] },
+  }));
+}
+
+interface Props {
+  guide: GuideEntry;
+  prev?: GuideEntry;
+  next?: GuideEntry;
+}
+const { guide, prev, next } = Astro.props;
+const d = guide.data;
+const { Content, headings } = await render(guide);
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const draft = d.status === 'draft';
+---
+<BaseLayout title={d.title} description={d.description} noindex={draft}>
+  <nav class="crumbs" aria-label="현재 위치">
+    <a href="/guides/">가이드</a>
+  </nav>
+
+  <div class="layout">
+    <article class="article">
+      <header class="head">
+        <h1>{d.title}</h1>
+        {d.titleJa && <p class="ja" lang="ja">{d.titleJa}</p>}
+        <div class="meta">
+          {d.tracks.map((t) => <TrackBadge track={t} />)}
+          {draft && <StatusChip tone="plain" outline label="작성 중" />}
+        </div>
+        {draft && (
+          <Notice tone="info" title="작성 중인 글이에요.">
+            목차만 먼저 공개했어요. 내용과 출처·최종 확인일은 채우는 대로 올라가요.
+          </Notice>
+        )}
+      </header>
+
+      {toc.length > 0 && (
+        <details class="toc toc--inline" open>
+          <summary>목차</summary>
+          <ol>{toc.map((h) => <li class={`d${h.depth}`}><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
+        </details>
+      )}
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      {draft ? (
+        <p class="draft-foot">출처와 최종 확인일은 글을 공개할 때 함께 적어요.</p>
+      ) : (
+        <SourceLine sources={d.sources} checkedAt={d.lastChecked!} checkedLabel="최종 확인일" />
+      )}
+
+      {(prev || next) && (
+        <nav class="pager" aria-label="다른 가이드">
+          {prev ? <a class="prev" href={guideHref(prev)}><span>이전 글</span>{prev.data.title}</a> : <span></span>}
+          {next && <a class="next" href={guideHref(next)}><span>다음 글</span>{next.data.title}</a>}
+        </nav>
+      )}
+    </article>
+
+    {toc.length > 0 && (
+      <aside class="aside" aria-label="목차">
+        <nav class="toc toc--side" aria-labelledby="toc-side-title">
+          <h2 id="toc-side-title">목차</h2>
+          <ol>{toc.map((h) => <li class={`d${h.depth}`}><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
+        </nav>
+      </aside>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .crumbs {
+    margin-bottom: var(--sp-3);
+    font-size: var(--fs-xs);
+  }
+  .crumbs a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .crumbs a:hover {
+    color: var(--accent);
+  }
+  .layout {
+    display: grid;
+    gap: var(--sp-10);
+  }
+  .article {
+    min-width: 0;
+    max-width: var(--measure);
+  }
+  h1 {
+    font-size: var(--fs-xl);
+    letter-spacing: -0.02em;
+  }
+  .head .ja {
+    margin-top: var(--sp-1);
+    font-size: var(--fs-sm);
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-top: var(--sp-3);
+  }
+
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: var(--fs-sm);
+  }
+  .toc a {
+    display: block;
+    padding: 3px 0;
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .toc a:hover {
+    color: var(--accent);
+  }
+  .toc .d3 {
+    padding-left: var(--sp-3);
+  }
+  .toc--inline {
+    margin-top: var(--sp-6);
+    padding: var(--sp-3) var(--sp-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+  }
+  .toc--inline summary {
+    cursor: pointer;
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+  }
+  .toc--inline ol {
+    margin-top: var(--sp-2);
+  }
+  .aside {
+    display: none;
+  }
+  .toc--side {
+    padding-top: var(--sp-3);
+    border-top: 2px solid var(--text);
+  }
+  .toc--side h2 {
+    margin-bottom: var(--sp-2);
+    font-size: var(--fs-sm);
+  }
+  @media (min-width: 960px) {
+    .layout {
+      grid-template-columns: minmax(0, var(--measure)) 240px;
+      justify-content: space-between;
+      align-items: start;
+    }
+    .aside {
+      display: block;
+      position: sticky;
+      top: var(--sp-6);
+    }
+    .toc--inline {
+      display: none;
+    }
+  }
+  .prose {
+    margin-top: var(--sp-6);
+  }
+  .draft-foot {
+    margin-top: var(--sp-8);
+    padding-top: var(--sp-3);
+    border-top: 1px dashed var(--border-strong);
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+  }
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-4);
+    margin-top: var(--sp-8);
+  }
+  .pager a {
+    display: block;
+    padding: var(--sp-3) 0;
+    border-top: 1px solid var(--border);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    text-decoration: none;
+  }
+  .pager a:hover {
+    color: var(--accent);
+  }
+  .pager span {
+    display: block;
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-regular);
+    color: var(--text-faint);
+  }
+  .pager .next {
+    text-align: right;
+    grid-column: 2;
+  }
+</style>
