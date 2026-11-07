@@ -1,5 +1,6 @@
 /** 트랙(지원자 상황) 정의. 홈의 "나는 어떤 경우?"와 트랙 배지에서 쓴다. */
-export type TrackId = 'new' | 'direct' | 'career';
+export const TRACK_IDS = ['new', 'direct', 'career'] as const;
+export type TrackId = (typeof TRACK_IDS)[number];
 
 export interface Track {
   id: TrackId;

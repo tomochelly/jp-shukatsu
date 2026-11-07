@@ -10,11 +10,12 @@
  *   - endTime이 없으면 (end ?? date) 날짜가 끝날 때(24:00)까지 유효.
  */
 import { z } from 'astro/zod';
+import { TRACK_IDS } from './tracks.ts';
 
 /** 지금 지원하는 시간대. 늘릴 때는 lib/ics.ts의 VTIMEZONE도 함께 추가. */
 export const SUPPORTED_TIME_ZONES = ['Asia/Tokyo'] as const;
 
-const isoDate = z
+export const isoDate = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 형식이어야 합니다')
   .refine((s) => {
@@ -132,3 +133,33 @@ export type Company = z.infer<typeof companySchema>;
 export type CompanyEvent = z.infer<typeof eventSchema>;
 export type IndustryFile = z.infer<typeof industryFileSchema>;
 export type TimeZone = (typeof SUPPORTED_TIME_ZONES)[number];
+
+/* ---------------- 가이드 글 (src/content/guides/*.md 프론트매터) ---------------- */
+
+/** YAML이 2026-11-08을 Date로 읽어도 "YYYY-MM-DD" 문자열로 맞춘다 */
+const yamlDate = z.preprocess((v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v), isoDate);
+
+export const guideSchema = z
+  .object({
+    title: nonEmpty,
+    /** 일본어 원문 제목·핵심 용어 (선택) */
+    titleJa: nonEmpty.optional(),
+    /** 목록과 검색 결과에 보이는 한두 문장 */
+    description: nonEmpty,
+    /** 해당하는 트랙 (1개 이상) */
+    tracks: z.array(z.enum(TRACK_IDS)).min(1),
+    /** 목록 순서 (작을수록 앞) */
+    order: z.number().int(),
+    /** draft: 틀만 있는 글(작성 중 표시, 검색 제외) / published: 공개 */
+    status: z.enum(['draft', 'published']).default('draft'),
+    /** 최종 확인일. 공개 글은 필수 (제도·비자 정보는 자주 바뀜) */
+    lastChecked: yamlDate.optional(),
+    sources: z.array(sourceSchema).default([]),
+  })
+  .superRefine((g, ctx) => {
+    if (g.status === 'published' && !g.lastChecked) {
+      ctx.addIssue({ code: 'custom', path: ['lastChecked'], message: '공개(published) 글은 lastChecked(최종 확인일)가 필요합니다' });
+    }
+  });
+
+export type Guide = z.infer<typeof guideSchema>;

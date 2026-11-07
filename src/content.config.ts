@@ -1,6 +1,6 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
-import { industryFileSchema } from './lib/schema.ts';
+import { guideSchema, industryFileSchema } from './lib/schema.ts';
 
 /**
  * 업계별 기업 데이터. 파일 하나 = 업계 하나.
@@ -12,4 +12,12 @@ const industries = defineCollection({
   schema: industryFileSchema,
 });
 
-export const collections = { industries };
+/**
+ * 가이드 글. 파일 이름이 URL이 된다 (src/content/guides/structure.md → /guides/structure/).
+ */
+const guides = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/guides' }),
+  schema: guideSchema,
+});
+
+export const collections = { industries, guides };
