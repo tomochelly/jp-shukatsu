@@ -14,7 +14,8 @@
   },
   // <이름>.<서브도메인>.workers.dev 주소 사용
   "workers_dev": true,
-  // 버전·브랜치별 미리보기 주소 (<버전 또는 별칭>-jp-shukatsu.<서브도메인>.workers.dev)
+  // 버전별 미리보기 주소 (wrangler versions upload용).
+  // 브랜치 미리보기는 Workers Builds의 Preview command(wrangler preview)가 만든다.
   "preview_urls": true,
   "observability": { "enabled": true }
 }

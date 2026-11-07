@@ -20,7 +20,7 @@ npm run preview:worker  # 빌드 후 Workers 환경으로 미리보기 (localhos
 - `assets.directory: ./dist`
 - `not_found_handling: "404-page"`: 없는 경로는 `dist/404.html`을 404로 응답
 - `html_handling: "auto-trailing-slash"`: `/companies/cygames` → `/companies/cygames/`
-- `preview_urls: true`: 브랜치별 미리보기 주소 사용
+- `preview_urls: true`: 버전별 미리보기 주소 사용 (`wrangler versions upload`용. 브랜치 미리보기는 `wrangler preview`)
 - `public/_headers`의 응답 헤더가 그대로 적용됨
 
 나중에 로그인·D1이 필요해지면 `wrangler.jsonc`에 `main`(Worker 코드)과 `d1_databases`를 추가합니다.
@@ -33,6 +33,9 @@ npm run preview:worker   # 빌드 후 wrangler dev → http://localhost:8787 (40
 
 ### GitHub 연결 (Workers Builds)
 
+> **2026-11 기준 화면**입니다. Cloudflare가 메뉴 이름·위치를 자주 바꾸니 다르면 이 절을 고쳐주세요.
+> 실제 화면에서 다시 확인하지 못한 것은 **(확인 필요)** 로 표시했습니다.
+
 1. Cloudflare 대시보드 → **Workers & Pages**에서 새 Worker 만들기 → Git 저장소 연결
    → GitHub 연결 후 `tomochelly/jp-shukatsu` 선택
 2. 설정
@@ -40,24 +43,35 @@ npm run preview:worker   # 빌드 후 wrangler dev → http://localhost:8787 (40
    - Production branch: `main`
    - Build command: `npm run build`
    - Deploy command: `npx wrangler deploy` (기본값)
-   - Non-production branch deploy command: `npx wrangler versions upload` (기본값)
+   - **Enable Preview builds: 켜기** (브랜치 미리보기용)
+   - Preview command: `npx wrangler preview` (기본값)
    - Root directory: 비워둠 (저장소 루트)
-   - Wrangler 버전: 빌드 때 `package.json`(devDependencies)에 적힌 버전을 씀. 올리려면 `npm install -D wrangler@4`
+   - API token: **이 프로젝트용으로 새로 만들기** (예: `jp-shukatsu-builds`). 아래 "연결할 때 주의" 참고
+   - Wrangler 버전: 빌드 때 `package.json`(devDependencies)에 적힌 버전을 씀.
+     `wrangler preview`는 4.158.0에 있음 (open beta). 올리려면 `npm install -D wrangler@4`
    - Build variables: `NODE_VERSION`: **확인 필요** (첫 빌드 로그의 Node 버전을 보고, 22보다 낮으면 `22`로 지정)
 3. 저장하면 첫 배포 → `https://jp-shukatsu.<계정 서브도메인>.workers.dev`
 
+나중에 빌드 설정을 바꾸려면: Worker의 Builds 설정 위쪽 **Production / Previews Base** 탭 (확인 필요)
+
+#### 연결할 때 주의
+
+- **"Configured API token unavailable"**: 다른 프로젝트용 API 토큰을 고르면 뜰 수 있음.
+  이 프로젝트용 토큰을 새로 만들어 선택 (예: `jp-shukatsu-builds`)
+- **"disconnected from your Git account" 배너**: GitHub → Settings → Applications →
+  Cloudflare 앱의 **Repository access**에 `jp-shukatsu`가 들어 있는지 확인
+
 ### 브랜치 미리보기 (PR로 확인 후 머지)
 
-처음 한 번: Worker의 **Settings > Build > Branch control**에서
-**"Builds for non-production branches"** 체크.
-
-- `main`에 푸시·머지 → 빌드 후 실제 사이트에 배포
-- 다른 브랜치에 푸시 → 빌드 후 `wrangler versions upload`로 **실제 사이트는 그대로 두고** 새 버전만 올림
+- `main`에 푸시·머지 → 빌드 후 `wrangler deploy`로 실제 사이트에 배포
+- 다른 브랜치에 푸시 → 빌드 후 `wrangler preview`로 **실제 사이트는 그대로 두고** 미리보기만 배포
   - 브랜치별 고정 주소: `https://<브랜치 이름>-jp-shukatsu.<서브도메인>.workers.dev`
     (같은 브랜치에 다시 푸시하면 같은 주소가 최신으로 바뀜)
   - PR을 열면 미리보기 주소가 PR에 댓글로 달림
+  - 대시보드에서는 Worker 화면의 **Production** 드롭다운에서 환경(브랜치)을 바꿔서 봄.
+    브랜치를 처음 푸시하기 전에는 "Create your first Preview" 안내만 뜸
   - 브랜치 이름은 주소에 들어가므로 영소문자·숫자·하이픈 권장 (예: `step5-companies-list`)
-- 작업 흐름: 화면이 바뀌는 작업은 브랜치 → PR → 미리보기 확인 → 머지
+- 작업 흐름: 화면이 바뀌는 작업은 브랜치 → PR → 미리보기 확인 → 머지. 문서만 바뀌면 `main`에 바로
 
 **미리보기 주소는 기본으로 공개**되어 있어 주소를 아는 누구나 볼 수 있습니다.
 제한하려면 **Settings > Domains & Routes > Preview URLs**에서 Cloudflare Access를 켭니다.
@@ -71,7 +85,7 @@ GitHub 연결 없이 로컬에서 올릴 때 (`wrangler login` 필요):
 
 ```bash
 npm run deploy           # 빌드 + 실제 사이트 배포
-npm run deploy:preview   # 빌드 + 미리보기 버전만 업로드
+npm run deploy:preview   # 빌드 + 현재 git 브랜치 이름으로 미리보기 배포 (wrangler preview)
 ```
 
 실제 도메인이 정해지면 `astro.config.mjs`의 `site`를 바꿔주세요 (canonical URL에 쓰임).
