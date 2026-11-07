@@ -1,0 +1,144 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import SectionHead from '~/components/SectionHead.astro';
+import GuideCard from '~/components/GuideCard.astro';
+import EventList from '~/components/EventList.astro';
+import { getCompanyData } from '~/lib/companies';
+import { getGuides } from '~/lib/guides';
+import { TRACKS, type Track } from '~/lib/tracks';
+
+export function getStaticPaths() {
+  return TRACKS.map((track) => ({ params: { track: track.id }, props: { track } }));
+}
+
+interface Props {
+  track: Track;
+}
+const { track: t } = Astro.props;
+const guides = await getGuides(t.id);
+const data = await getCompanyData();
+const wanted = t.status === 'wanted';
+---
+<BaseLayout title={t.label} description={`${t.label}: ${t.description}`} noindex={wanted}>
+  <header class="head" data-track={t.id}>
+    <p class="eyebrow">나는 어떤 경우?</p>
+    <h1>
+      {t.label}
+      {t.labelJa && <span class="ja" lang="ja">{t.labelJa}</span>}
+    </h1>
+    <p class="desc">{t.description}</p>
+  </header>
+
+  {wanted && (
+    <section class="wanted" aria-labelledby="wanted-title">
+      <h2 id="wanted-title">준비 중이에요</h2>
+      <p>
+        이 경우는 운영자가 직접 겪은 길이 아니라서, 정확하게 쓸 수 있는 내용이 아직 적어요.
+        추측으로 채우기보다 실제로 겪은 분들의 이야기를 모아서 정리하려고 해요.
+      </p>
+      <p><strong>경험을 나눠주실 분을 구해요.</strong> 공유 창구는 곧 열 예정이에요.</p>
+      {guides.length > 0 && <p class="hint">아래 글은 이 경우에도 해당하는 공통 내용이에요.</p>}
+    </section>
+  )}
+
+  <div class="cols">
+    <section aria-labelledby="guides-title">
+      <SectionHead id="guides-title" title={wanted ? '같이 보면 좋은 가이드' : '가이드'} href="/guides/" />
+      {guides.length > 0 ? (
+        <ul class="list">{guides.map((g) => <GuideCard guide={g} />)}</ul>
+      ) : (
+        <p class="empty">아직 이 경우에 맞는 글이 없어요.</p>
+      )}
+    </section>
+
+    {!wanted && (
+      <section aria-labelledby="events-title">
+        <SectionHead id="events-title" title="다가오는 일정" href="/calendar/" linkLabel="캘린더 전체" />
+        <EventList events={data.events} upcomingLimit={5} emptyText="지금은 다가오는 일정이 없어요." />
+        <p class="more">
+          <a href="/companies/">기업 {data.companies.length}곳 정보 보기 ›</a>
+        </p>
+      </section>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .head {
+    padding-left: var(--sp-4);
+    border-left: 4px solid var(--t);
+  }
+  [data-track='new'] { --t: var(--track-new); }
+  [data-track='direct'] { --t: var(--track-direct); }
+  [data-track='career'] { --t: var(--track-career); }
+  .eyebrow {
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+  }
+  h1 {
+    margin-top: var(--sp-1);
+    font-size: var(--fs-xl);
+  }
+  h1 .ja {
+    margin-left: var(--sp-2);
+    font-size: var(--fs-md);
+  }
+  .desc {
+    margin-top: var(--sp-1);
+    color: var(--text-muted);
+  }
+  .wanted {
+    max-width: var(--measure);
+    margin-top: var(--sp-6);
+    padding: var(--sp-4);
+    border: 1px dashed var(--track-direct);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-body);
+  }
+  .wanted h2 {
+    font-size: var(--fs-base);
+    color: var(--track-direct);
+  }
+  .wanted p {
+    margin-top: var(--sp-2);
+  }
+  .wanted .hint {
+    color: var(--text-muted);
+  }
+  .cols {
+    display: grid;
+    gap: var(--sp-10);
+    margin-top: var(--sp-8);
+  }
+  @media (min-width: 960px) {
+    .cols:has(> :nth-child(2)) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .cols:not(:has(> :nth-child(2))) {
+      max-width: 720px;
+    }
+  }
+  .list {
+    list-style: none;
+    padding: 0;
+    border-top: 1px solid var(--border);
+  }
+  .empty {
+    padding: var(--sp-4) 0;
+    border-top: 1px solid var(--border);
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+  .more {
+    margin-top: var(--sp-3);
+    font-size: var(--fs-sm);
+  }
+  .more a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .more a:hover {
+    text-decoration: underline;
+  }
+</style>

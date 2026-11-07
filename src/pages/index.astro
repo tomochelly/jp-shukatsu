@@ -6,15 +6,18 @@ import EventList from '~/components/EventList.astro';
 import StatusChip from '~/components/StatusChip.astro';
 import { getCompanyData } from '~/lib/companies';
 import { IMMINENT_DAYS } from '~/lib/dates';
+import GuideCard from '~/components/GuideCard.astro';
+import { getGuides } from '~/lib/guides';
 
 const data = await getCompanyData();
+const guides = await getGuides();
 const targets = [...new Set(data.industries.map((i) => i.targetYearLabel))].join(', ');
 ---
 <BaseLayout>
   <section class="tracks" aria-labelledby="tracks-title">
     <h1 id="tracks-title">나는 어떤 경우?</h1>
     <p class="lead">상황에 따라 준비 순서가 달라요. 해당하는 쪽을 골라주세요.</p>
-    <TrackPicker meta={{ new: `${targets} · 기업 ${data.companies.length} · 일정 ${data.events.length}` }} />
+    <TrackPicker meta={{ new: `${targets} · 가이드 ${guides.filter((g) => g.data.tracks.includes('new')).length} · 기업 ${data.companies.length}` }} />
   </section>
 
   <div class="cols">
@@ -30,9 +33,7 @@ const targets = [...new Set(data.industries.map((i) => i.targetYearLabel))].join
 
     <section aria-labelledby="guides-title">
       <SectionHead id="guides-title" title="가이드" href="/guides/" />
-      <p class="placeholder">
-        일본 취업 구조, 용어 사전, 졸업 연도별 일정을 정리하고 있어요.
-      </p>
+      <ul class="guides">{guides.slice(0, 4).map((g) => <GuideCard guide={g} compact />)}</ul>
     </section>
   </div>
 </BaseLayout>
@@ -66,10 +67,9 @@ const targets = [...new Set(data.industries.map((i) => i.targetYearLabel))].join
     font-size: var(--fs-xs);
     color: var(--text-faint);
   }
-  .placeholder {
-    padding: var(--sp-4) 0;
+  .guides {
+    list-style: none;
+    padding: 0;
     border-top: 1px solid var(--border);
-    font-size: var(--fs-sm);
-    color: var(--text-muted);
   }
 </style>
