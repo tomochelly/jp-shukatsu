@@ -12,11 +12,29 @@ npm run check    # 타입 검사
 npm test         # 날짜·.ics·데이터 검증 테스트
 ```
 
-## Cloudflare Pages 설정
+## Cloudflare Pages 연결 (커밋마다 미리보기)
 
-- Build command: `npm run build`
-- Build output directory: `dist`
-- 환경 변수 `NODE_VERSION=22`
+GitHub 저장소를 Pages에 연결하면 `main`에 올릴 때마다 실제 사이트가,
+다른 브랜치·PR에 올릴 때마다 미리보기 주소가 자동으로 만들어집니다.
+
+1. Cloudflare 대시보드 → **Workers & Pages** → **Create** → **Pages** 탭 → **Connect to Git**
+2. GitHub 계정 연결 후 `tomochelly/jp-shukatsu` 선택 (비공개 저장소도 가능)
+3. 빌드 설정
+   - Framework preset: **Astro**
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+   - 환경 변수: `NODE_VERSION` = `22`
+4. **Save and Deploy** → `https://<프로젝트 이름>.pages.dev` 생성
+5. 미리보기: 설정 → **Builds & deployments** → Preview deployments를 **All non-production branches**로
+   - 커밋마다 `https://<커밋 해시>.<프로젝트>.pages.dev`
+   - 브랜치마다 `https://<브랜치 이름>.<프로젝트>.pages.dev` (항상 그 브랜치의 최신)
+   - PR에는 미리보기 주소가 댓글로 달림
+
+빌드 중 데이터 검증이 실패하면 배포되지 않고 이전 버전이 그대로 남습니다
+(실패 이유는 해당 배포의 빌드 로그에서 확인).
+미리보기 주소는 검색엔진에 노출되지 않도록 Pages가 `X-Robots-Tag: noindex`를 붙입니다.
+
+실제 도메인이 정해지면 `astro.config.mjs`의 `site`를 바꿔주세요 (canonical URL에 쓰임).
 
 ## 구조 원칙
 
