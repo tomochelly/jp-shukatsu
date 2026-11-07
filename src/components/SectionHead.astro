@@ -1,0 +1,39 @@
+---
+/** 섹션 제목 + 오른쪽 "전체 ›" 링크 */
+interface Props {
+  title: string;
+  id: string;
+  href?: string;
+  linkLabel?: string;
+  level?: 2 | 3;
+}
+const { title, id, href, linkLabel = '전체', level = 2 } = Astro.props;
+const H = `h${level}` as 'h2' | 'h3';
+---
+<div class="section-head">
+  <H id={id} class="title">{title}</H>
+  {href && <a class="link" href={href}>{linkLabel} <span aria-hidden="true">›</span></a>}
+</div>
+
+<style>
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-3);
+  }
+  .title {
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+  }
+  .link {
+    font-size: var(--fs-sm);
+    color: var(--accent);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .link:hover {
+    text-decoration: underline;
+  }
+</style>

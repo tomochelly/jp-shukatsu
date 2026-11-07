@@ -1,0 +1,113 @@
+---
+/** 홈의 "나는 어떤 경우?" 트랙 선택 */
+import { TRACKS, type TrackId } from '~/lib/tracks';
+
+interface Props {
+  /** 트랙별 한 줄 요약 (예: "기업 5 · 일정 7"). 없으면 준비 중 문구 */
+  meta?: Partial<Record<TrackId, string>>;
+}
+const { meta = {} } = Astro.props;
+---
+<ul class="track-list">
+  {TRACKS.map((t) => (
+    <li class="track-item" data-track={t.id} data-status={t.status}>
+      <a href={`/tracks/${t.id}/`}>
+        <span class="bar" aria-hidden="true"></span>
+        <span class="text">
+          <span class="name">
+            {t.label}
+            {t.labelJa && <span class="ja" lang="ja">{t.labelJa}</span>}
+          </span>
+          <span class="desc">{t.description}</span>
+          {t.status === 'wanted' ? (
+            <span class="meta wanted">준비 중 · 경험 공유해주실 분 구해요</span>
+          ) : (
+            meta[t.id] && <span class="meta num">{meta[t.id]}</span>
+          )}
+        </span>
+        <span class="arrow" aria-hidden="true">›</span>
+      </a>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .track-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--border);
+  }
+  [data-track='new'] { --t: var(--track-new); }
+  [data-track='direct'] { --t: var(--track-direct); }
+  [data-track='career'] { --t: var(--track-career); }
+
+  a {
+    display: grid;
+    grid-template-columns: 4px minmax(0, 1fr) auto;
+    gap: var(--sp-3);
+    align-items: center;
+    padding: var(--sp-4) 0;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+  }
+  .bar {
+    align-self: stretch;
+    background: var(--t);
+    border-radius: 2px;
+  }
+  .text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .name {
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+  }
+  .name .ja {
+    margin-left: var(--sp-1);
+  }
+  [data-status='wanted'] .name {
+    color: var(--text-muted);
+  }
+  a:hover .name {
+    color: var(--t);
+  }
+  .desc {
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+  .meta {
+    margin-top: var(--sp-1);
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+  }
+  .meta.wanted {
+    color: var(--track-direct);
+  }
+  .arrow {
+    color: var(--text-faint);
+    font-size: var(--fs-lg);
+  }
+
+  @media (min-width: 760px) {
+    .track-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0 var(--sp-6);
+      border-top: 0;
+    }
+    a {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      height: 100%;
+      border-bottom: 0;
+      border-top: 3px solid var(--t);
+      padding: var(--sp-4) 0 var(--sp-2);
+    }
+    .bar {
+      display: none;
+    }
+  }
+</style>

@@ -1,18 +1,75 @@
 ---
-// 1단계 확인용 임시 홈. 4단계에서 시안 기준 홈으로 교체.
 import BaseLayout from '~/layouts/BaseLayout.astro';
+import TrackPicker from '~/components/TrackPicker.astro';
+import SectionHead from '~/components/SectionHead.astro';
+import EventList from '~/components/EventList.astro';
+import StatusChip from '~/components/StatusChip.astro';
+import { getCompanyData } from '~/lib/companies';
+import { IMMINENT_DAYS } from '~/lib/dates';
+
+const data = await getCompanyData();
+const targets = [...new Set(data.industries.map((i) => i.targetYearLabel))].join(', ');
 ---
 <BaseLayout>
-  <h1 class="tmp-title">나는 어떤 경우?</h1>
-  <p class="tmp-text">레이아웃 골격 확인용 페이지입니다. 홈 화면은 4단계에서 만듭니다.</p>
+  <section class="tracks" aria-labelledby="tracks-title">
+    <h1 id="tracks-title">나는 어떤 경우?</h1>
+    <p class="lead">상황에 따라 준비 순서가 달라요. 해당하는 쪽을 골라주세요.</p>
+    <TrackPicker meta={{ new: `${targets} · 기업 ${data.companies.length} · 일정 ${data.events.length}` }} />
+  </section>
+
+  <div class="cols">
+    <section aria-labelledby="upcoming-title">
+      <SectionHead id="upcoming-title" title="다가오는 일정" href="/calendar/" linkLabel="캘린더 전체" />
+      <EventList events={data.events} upcomingLimit={5} emptyText="지금은 다가오는 일정이 없어요." />
+      <p class="legend">
+        <StatusChip tone="danger" label="마감 임박" /> {IMMINENT_DAYS}일 이내
+        <StatusChip tone="ok" label="진행 중" /> 응모 기간 안
+        <span class="tz">· 일본 시간 기준</span>
+      </p>
+    </section>
+
+    <section aria-labelledby="guides-title">
+      <SectionHead id="guides-title" title="가이드" href="/guides/" />
+      <p class="placeholder">
+        일본 취업 구조, 용어 사전, 졸업 연도별 일정을 정리하고 있어요.
+      </p>
+    </section>
+  </div>
 </BaseLayout>
 
 <style>
-  .tmp-title {
+  h1 {
     font-size: var(--fs-xl);
+    letter-spacing: -0.02em;
   }
-  .tmp-text {
-    margin-top: var(--sp-2);
+  .lead {
+    margin: var(--sp-1) 0 var(--sp-4);
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+  .cols {
+    display: grid;
+    gap: var(--sp-10);
+    margin-top: var(--sp-10);
+  }
+  @media (min-width: 960px) {
+    .cols {
+      grid-template-columns: minmax(0, 1fr) 300px;
+    }
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-top: var(--sp-3);
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+  }
+  .placeholder {
+    padding: var(--sp-4) 0;
+    border-top: 1px solid var(--border);
+    font-size: var(--fs-sm);
     color: var(--text-muted);
   }
 </style>
