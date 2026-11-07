@@ -4,6 +4,8 @@
 
 ## 개발
 
+Node 24 (`.node-version`: 24.22.1, 배포 빌드 환경과 같음). fnm·nvm·mise 등은 이 파일을 자동으로 읽음.
+
 ```bash
 npm install
 npm run dev      # http://localhost:4321
@@ -49,7 +51,9 @@ npm run preview:worker   # 빌드 후 wrangler dev → http://localhost:8787 (40
    - API token: **이 프로젝트용으로 새로 만들기** (예: `jp-shukatsu-builds`). 아래 "연결할 때 주의" 참고
    - Wrangler 버전: 빌드 때 `package.json`(devDependencies)에 적힌 버전을 씀.
      `wrangler preview`는 4.158.0에 있음 (open beta). 올리려면 `npm install -D wrangler@4`
-   - Build variables: `NODE_VERSION`: **확인 필요** (첫 빌드 로그의 Node 버전을 보고, 22보다 낮으면 `22`로 지정)
+   - Node 버전: 빌드 환경 기본값이 **Node 24.22.1** (2026-11 첫 빌드 #ae0fe840에서 확인)이라 따로 지정하지 않음.
+     저장소의 `.node-version`도 `24.22.1`로 맞춰둠. 나중에 빌드 환경 기본값이 바뀌어 어긋나면
+     Build variables에 `NODE_VERSION` = `24.22.1` 추가 (Workers Builds가 `.node-version`을 읽는지는 확인 필요)
 3. 저장하면 첫 배포 → `https://jp-shukatsu.<계정 서브도메인>.workers.dev`
 
 나중에 빌드 설정을 바꾸려면: Worker의 Builds 설정 위쪽 **Production / Previews Base** 탭 (확인 필요)
